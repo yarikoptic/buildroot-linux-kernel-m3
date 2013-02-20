@@ -170,12 +170,24 @@ static int __init root_data_setup(char *str)
 	return 1;
 }
 
+#ifdef CONFIG_CMDLINE_EXTEND
+static int __initdata root_fs_found = 0;
+#endif
+
 static char * __initdata root_fs_names;
 static int __init fs_names_setup(char *str)
 {
-	root_fs_names = str;
-	return 1;
+	#ifdef CONFIG_CMDLINE_EXTEND
+	if (!root_fs_found) {
+		root_fs_found = 1;
+		root_fs_names = str;
+	}
+	#else
+		root_fs_names = str;
+	#endif
+	return 1;	
 }
+
 
 static unsigned int __initdata root_delay;
 static int __init root_delay_setup(char *str)
