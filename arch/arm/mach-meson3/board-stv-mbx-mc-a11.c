@@ -210,8 +210,6 @@ static struct platform_device adc_kp_device = {
 };
 #endif
 
-
-
 #if defined(CONFIG_KEY_INPUT_CUSTOM_AM) || defined(CONFIG_KEY_INPUT_CUSTOM_AM_MODULE)
 #include <linux/input.h>
 #include <linux/input/key_input.h>
@@ -645,7 +643,7 @@ static struct aml_m3_platform_data aml_m3_pdata = {
     .is_hp_pluged = &aml_m3_is_hp_pluged,
 };
 
-void mute_spk(struct snd_soc_codec* codec, int flag)
+void mute_spk(void* codec, int flag)
 {
 #ifdef _AML_M3_HW_DEBUG_
 	printk("***Entered %s:%s\n", __FILE__,__func__);
@@ -857,31 +855,30 @@ static void set_vccx2(int power_on)
     }
 }
 
+extern void hdmi_wr_reg(unsigned long addr, unsigned long data);
+
 static void set_gpio_suspend_resume(int power_on)
 {
     if(power_on)
-    	{
+    {
     	printk("set gpio resume.\n");
-		 // HDMI
-        extern void hdmi_wr_reg(unsigned long addr, unsigned long data);
+	// HDMI
         hdmi_wr_reg(0x8005, 2); 
-		 udelay(50);
+	udelay(50);
         hdmi_wr_reg(0x8005, 1); 
         // LED
         WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0xff00<<0));
-    	}
-	else
-		{
-    	printk("set gpio suspend.\n");
-		 // LED
-        WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0<<0));
-		}
+    } else {
+	printk("set gpio suspend.\n");
+	// LED
+	WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0<<0));
+    }
 }
 
 static struct meson_pm_config aml_pm_pdata = {
-    .pctl_reg_base = IO_APB_BUS_BASE,
-    .mmc_reg_base = APB_REG_ADDR(0x1000),
-    .hiu_reg_base = CBUS_REG_ADDR(0x1000),
+    .pctl_reg_base = (void __iomem *)IO_APB_BUS_BASE,
+    .mmc_reg_base = (void __iomem *)APB_REG_ADDR(0x1000),
+    .hiu_reg_base = (void __iomem *)CBUS_REG_ADDR(0x1000),
     .power_key = (1<<8),
     .ddr_clk = 0x00110820,
     .sleepcount = 128,
@@ -1834,35 +1831,40 @@ static void __init power_hold(void)
 static void __init LED_PWM_REG0_init(void)
 {
 #if 1 	// PWM_C
-    printk(KERN_INFO "LED_PWM_REG0_init.\n");
-	 SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_2,(1<<2));
-    WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0xff00<<0));
-    WRITE_CBUS_REG(PWM_MISC_REG_CD, (1<<0)	// enable
+	printk(KERN_INFO "LED_PWM_REG0_init.\n");
+	SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_2,(1<<2));
+	WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0xff00<<0));
+	WRITE_CBUS_REG(PWM_MISC_REG_CD, (1<<0)	// enable
 																			|(0<<4)	// PWM_A_CLK_SEL: 0:XTAL;  1:ddr_pll_clk;  2:clk81;  3:sys_pll_clk;
 																			|(0x7f<<8)	// PWM_A_CLK_DIV
 																			|(1<<15)	// PWM_A_CLK_EN
 																			);
 #else
         // Enable VBG_EN
-    WRITE_CBUS_REG_BITS(PREG_AM_ANALOG_ADDR, 1, 0, 1);
-    // wire pm_gpioA_7_led_pwm = pin_mux_reg0[22];
-    WRITE_CBUS_REG(LED_PWM_REG0,(0 << 31)   |       // disable the overall circuit
-                                (0 << 30)   |       // 1:Closed Loop  0:Open Loop
-                                (0 << 16)   |       // PWM total count
-                                (0 << 13)   |       // Enable
-                                (1 << 12)   |       // enable
-                                (0 << 10)   |       // test
-                                (7 << 7)    |       // CS0 REF, Voltage FeedBack: about 0.505V
-                                (7 << 4)    |       // CS1 REF, Current FeedBack: about 0.505V
-                                READ_CBUS_REG(LED_PWM_REG0)&0x0f);           // DIMCTL Analog dimmer
-                                
-    WRITE_CBUS_REG_BITS(LED_PWM_REG0,1,0,4); //adust cpu1.2v   to 1.26V     
+	WRITE_CBUS_REG_BITS(PREG_AM_ANALOG_ADDR, 1, 0, 1);
+	// wire pm_gpioA_7_led_pwm = pin_mux_reg0[22];
+	WRITE_CBUS_REG(LED_PWM_REG0,(0 << 31)   |       // disable the overall circuit
+    	                            (0 << 30)   |       // 1:Closed Loop  0:Open Loop
+        	                    (0 << 16)   |       // PWM total count
+                	            (0 << 13)   |       // Enable
+                        	    (1 << 12)   |       // enable
+                            	    (0 << 10)   |       // test
+                            	    (7 << 7)    |       // CS0 REF, Voltage FeedBack: about 0.505V
+                            	    (7 << 4)    |       // CS1 REF, Current FeedBack: about 0.505V
+                            	    READ_CBUS_REG(LED_PWM_REG0)&0x0f);           // DIMCTL Analog dimmer
+	WRITE_CBUS_REG_BITS(LED_PWM_REG0,1,0,4); //adust cpu1.2v   to 1.26V     
 #endif
 }
 
+
+#ifdef CONFIG_AML_SUSPEND
+extern int (*pm_power_suspend)(void);
+#endif /*CONFIG_AML_SUSPEND*/
+
+
 // Rony add 20120611 get hardware id 
 // GPIOB23,GPIOB22,GPIOB21
-void device_hardware_id_init(){	
+static void device_hardware_id_init() {	
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<4));
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<12));
 	WRITE_CBUS_REG( PREG_PAD_GPIO1_EN_N, READ_CBUS_REG(PREG_PAD_GPIO1_EN_N) | ((1<<21)|(1<<22)|(1<<23)) ); 
@@ -1875,7 +1877,6 @@ static __init void m1_init_machine(void)
 {
 	meson_cache_init();
 #ifdef CONFIG_AML_SUSPEND
-	extern int (*pm_power_suspend)(void);
 	pm_power_suspend = meson_power_suspend;
 #endif /*CONFIG_AML_SUSPEND*/
 	device_hardware_id_init();// Rony add it check hardware id
@@ -1887,14 +1888,14 @@ static __init void m1_init_machine(void)
 	platform_add_devices(platform_devs, ARRAY_SIZE(platform_devs));
 
 #ifdef CONFIG_USB_DWC_OTG_HCD
-    printk("***m1_init_machine: usb set mode.\n");
-    set_usb_phy_clk(USB_PHY_CLOCK_SEL_XTAL_DIV2);
+	printk("***m1_init_machine: usb set mode.\n");
+	set_usb_phy_clk(USB_PHY_CLOCK_SEL_XTAL_DIV2);
 	set_usb_phy_id_mode(USB_PHY_PORT_A, USB_PHY_MODE_SW_HOST);
-    lm_device_register(&usb_ld_a);
-  	set_usb_phy_id_mode(USB_PHY_PORT_B,USB_PHY_MODE_SW_HOST);
-    lm_device_register(&usb_ld_b);
+	lm_device_register(&usb_ld_a);
+	set_usb_phy_id_mode(USB_PHY_PORT_B,USB_PHY_MODE_SW_HOST);
+	lm_device_register(&usb_ld_b);
 #endif
-    disable_unused_model();
+	disable_unused_model();
 }
 
 /*VIDEO MEMORY MAPING*/
