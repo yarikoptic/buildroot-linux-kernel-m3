@@ -41,6 +41,7 @@
 #include <linux/reboot.h>
 #include <mach/usbclock.h>
 #include <mach/am_regs.h>
+#include <linux/aml_eth.h>
 
 #ifdef CONFIG_AM_UART_WITH_S_CORE 
 #include <linux/uart-aml.h>
@@ -1309,7 +1310,39 @@ static struct platform_device aml_wdt_device = {
 #endif
 
 
+#define ETH_PM_DEV
+#if defined(ETH_PM_DEV)
+#define ETH_MODE_RMII_EXTERNAL
+static void meson_eth_clock_enable(int flag)
+{
+}
+
+static void meson_eth_reset(void)
+{
+    set_gpio_mode(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), GPIO_OUTPUT_MODE);
+    set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 0);
+    mdelay(100);
+    set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 1);
+}
+
+static struct aml_eth_platform_data aml_pm_eth_platform_data = {
+    .clock_enable = meson_eth_clock_enable,
+    .reset = meson_eth_reset,
+};
+
+struct platform_device meson_device_eth = {
+	.name = "ethernet_pm_driver",
+	.id = -1,
+	.dev = {
+		.platform_data = &aml_pm_eth_platform_data,
+	}
+};
+#endif
+
 static struct platform_device __initdata *platform_devs[] = {
+#if defined(ETH_PM_DEV)
+    &meson_device_eth,
+#endif
 #if defined(CONFIG_JPEGLOGO)
     &jpeglogo_device,
 #endif
@@ -1508,35 +1541,19 @@ __setup("ID=", get_board_id);
 static void __init device_pinmux_init(void )
 {
     clearall_pinmux();
-    /*other deivce power on*/
-    /*GPIOA_200e_bit4..usb/eth/YUV power on*/
-    //set_gpio_mode(PREG_EGPIO,1<<4,GPIO_OUTPUT_MODE);
-    //set_gpio_val(PREG_EGPIO,1<<4,1);
-    //uart_set_pinmux(UART_PORT_A,PINMUX_UART_A);
-    //uart_set_pinmux(UART_PORT_B,PINMUX_UART_B);
     /*pinmux of eth*/
     eth_pinmux_init();
     aml_i2c_init();
-    // set_audio_pinmux(AUDIO_OUT_TEST_N);
-    // set_audio_pinmux(AUDIO_IN_JTAG);
 }
 
 static void __init  device_clk_setting(void)
 {
-    /*Demod CLK for eth and sata*/
-    //demod_apll_setting(0,1200*CLK_1M);
-    /*eth clk*/
-	//Rony add for eth used external clock 20120509
-	//int board_hwid = 0;
-	
-	//board_hwid = = get_hardware_id();	// Rony modify 20120611 move in get_hardware_id
-	if((board_ver_id == 0x00) || (board_ver_id == 0x01)){ // internal Rony add id 0x01 used internal clock
-    	eth_clk_set(ETH_CLKSRC_MISC_CLK, get_misc_pll_clk(), (50 * CLK_1M), 0);
-	}else{ // external
-		eth_clk_set(ETH_CLKSRC_EXT_XTAL_CLK, (50 * CLK_1M), (50 * CLK_1M), 1);
-	}
-	//end Rony add for eth used external clock 20120509
-    //eth_clk_set(1, get_system_clk(), (50 * CLK_1M), 0);
+	/*eth clk*/
+#ifdef NET_EXT_CLK
+	eth_clk_set(7, (50 * CLK_1M), (50 * CLK_1M), 1);
+#else
+	eth_clk_set(ETH_CLKSRC_MISC_CLK, get_misc_pll_clk(), (50 * CLK_1M), 0);
+#endif
 }
 
 #ifdef CONFIG_STV_CHECK
