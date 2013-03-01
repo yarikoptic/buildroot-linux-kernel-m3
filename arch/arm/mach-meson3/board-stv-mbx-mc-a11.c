@@ -628,6 +628,14 @@ static struct platform_device aml_audio = {
 	.num_resources  = ARRAY_SIZE(aml_m3_audio_resource),
 };
 
+/* These three functions below are needed by the SND module */
+int aml_m3_is_hp_pluged(void)
+{
+	// vDorst: A11 has not analog audio.
+	// vDorst: Unsure what to chose. HP pluged or not.
+	return 0; //return 1: hp pluged, 0: hp unpluged.
+}
+
 void mute_spk(void* codec, int flag)
 {
 	// vDorst: A11 has not analog audio.
