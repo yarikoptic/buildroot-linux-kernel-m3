@@ -1463,85 +1463,38 @@ static void __init eth_pinmux_init(void)
 
 static void __init gpio_init(void)
 {
-    printk(KERN_INFO "power hold set high!\n");
-  //  set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
-  //  set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
+	printk(KERN_INFO "power hold set high!\n");
+	// set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
+	// set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
 
         // 5V
         set_gpio_mode(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), 1);
 
-		 // 3.3v
+	// 3.3v
         set_gpio_mode(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), 1);
 
-		 // 1.28v
+	// 1.28v
         set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
 
-		 // 1.2v
+	// 1.2v
         set_gpio_mode(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), 0);
 
-		 // ddr1.5v
+	// ddr1.5v
         set_gpio_mode(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), 0);
 	
-	
-		 // hdmi power on
-//        set_gpio_mode(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE);
-//        set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
+	// hdmi power on
+	set_gpio_mode(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE);
+	set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
 
-/*		 // ethernet reset
-        set_gpio_mode(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 0);
-		 mdelay(100);
-        set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 1);
-
-		// usb power
-		printk(KERN_INFO "set_vccx2: set usb power on.\n");
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_1,(1<<10));
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<18));
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<23));
-		set_gpio_mode(GPIOC_bank_bit0_15(8), GPIOC_bit_bit0_15(8), GPIO_OUTPUT_MODE);
-		set_gpio_val(GPIOC_bank_bit0_15(8), GPIOC_bit_bit0_15(8), 1);
-
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_1,(1<<5));
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<16));
-		set_gpio_mode(GPIOC_bank_bit0_15(6), GPIOC_bit_bit0_15(6), GPIO_OUTPUT_MODE);
-		set_gpio_val(GPIOC_bank_bit0_15(6), GPIOC_bit_bit0_15(6), 1);
-
-       // LED
-        set_gpio_mode(GPIOD_bank_bit0_9(0), GPIOD_bit_bit0_9(0), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOD_bank_bit0_9(0), GPIOD_bit_bit0_9(0), 1);
-				
-		 CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<17));
-		 CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_1,(7<<2)|(1<<11));
-        set_gpio_mode(GPIOC_bank_bit0_15(7), GPIOC_bit_bit0_15(7), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOC_bank_bit0_15(7), GPIOC_bit_bit0_15(7), 1);
-
-//        SET_AOBUS_REG_MASK(AO_RTI_PIN_MUX_REG, 13);
-//		 CLEAR_AOBUS_REG_MASK(AO_RTI_PIN_MUX_REG, 14);
-        set_gpio_mode(GPIOAO_bank_bit0_11(10), GPIOAO_bit_bit0_11(10), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOAO_bank_bit0_11(10), GPIOAO_bit_bit0_11(10), 0);
-*/
-
-		// wifi power
-	  // CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_1,(1<<6));
-	  // CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<15));
-    //   set_gpio_mode(GPIOC_bank_bit0_15(5), GPIOC_bit_bit0_15(5), GPIO_OUTPUT_MODE);
-	   //Rony add,if board_ver_id equal 0x02 then inverse wifi power level 20120612
-	  // if(board_ver_id == 0x02){
-     //  	set_gpio_val(GPIOC_bank_bit0_15(5), GPIOC_bit_bit0_15(5), 0);
-	   //}else
-	   //Rony add end
-	   //{
-     //  	set_gpio_val(GPIOC_bank_bit0_15(5), GPIOC_bit_bit0_15(5), 1);
-	   //}
-    //VCCx2 power up
-    printk(KERN_INFO "set_vccx2 power up\n");
-    set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
-    set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);
+	//VCCx2 power up
+	printk(KERN_INFO "set_vccx2 power up\n");
+	set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
+	set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);
 }
 
 char board_id[8];
@@ -1550,7 +1503,6 @@ static int __init get_board_id(char* str)
 	sprintf(board_id,str, sizeof(str));
 	return 0;
 }
-
 __setup("ID=", get_board_id);
 
 static void __init device_pinmux_init(void )
@@ -1567,7 +1519,6 @@ static void __init device_pinmux_init(void )
     aml_i2c_init();
     // set_audio_pinmux(AUDIO_OUT_TEST_N);
     // set_audio_pinmux(AUDIO_IN_JTAG);
-
 }
 
 static void __init  device_clk_setting(void)
