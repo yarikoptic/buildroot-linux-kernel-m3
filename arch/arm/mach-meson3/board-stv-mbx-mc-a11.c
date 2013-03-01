@@ -1524,16 +1524,6 @@ static void __init eth_pinmux_init(void)
 #endif
 }
 
-	//add by steven for spdif output.
-static void __init spdif_pinmux_init(void)
-{
-	printk("SPDIF output.\n"); 
-	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<19)); 
-	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<25)); 
-	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7,(1<<17)); 
-	SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<24));
-}
-
 static void __init gpio_init(void)
 {
     printk(KERN_INFO "power hold set high!\n");
@@ -1638,11 +1628,6 @@ static void __init device_pinmux_init(void )
     /*pinmux of eth*/
     eth_pinmux_init();
     aml_i2c_init();
-    printk("SPDIF output.\n");
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<19));
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<25));
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7,(1<<17));
-		SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<24));
     // set_audio_pinmux(AUDIO_OUT_TEST_N);
     // set_audio_pinmux(AUDIO_IN_JTAG);
 
