@@ -613,82 +613,30 @@ static struct platform_device audiodsp_device = {
 #endif
 
 static struct resource aml_m3_audio_resource[] = {
-    [0] =   {
-        .start  =   0,
-        .end        =   0,
-        .flags  =   IORESOURCE_MEM,
-    },
+	[0] = {
+		.start	= 0,
+		.end 	= 0,
+		.flags	= IORESOURCE_MEM,
+	},
 };
 
 #if defined(CONFIG_SND_AML_M3)
 static struct platform_device aml_audio = {
-    .name               = "aml_m3_audio",
-    .id                     = -1,
-    .resource       =   aml_m3_audio_resource,
-    .num_resources  =   ARRAY_SIZE(aml_m3_audio_resource),
-};
-
-int aml_m3_is_hp_pluged(void)
-{
-	return READ_CBUS_REG_BITS(PREG_PAD_GPIO0_I, 19, 1); //return 1: hp pluged, 0: hp unpluged.
-}
-
-
-struct aml_m3_platform_data {
-    int (*is_hp_pluged)(void);
-};
-
-
-static struct aml_m3_platform_data aml_m3_pdata = {
-    .is_hp_pluged = &aml_m3_is_hp_pluged,
+	.name           = "aml_m3_audio",
+	.id             = -1,
+	.resource       = aml_m3_audio_resource,
+	.num_resources  = ARRAY_SIZE(aml_m3_audio_resource),
 };
 
 void mute_spk(void* codec, int flag)
 {
-#ifdef _AML_M3_HW_DEBUG_
-	printk("***Entered %s:%s\n", __FILE__,__func__);
-#endif
-
-// Rony add it reversal level 20120611 
-	//printk("====================== mute spk flag = %d\n",flag);
-	if(board_ver_id == 0x02){
-		if(flag){
-			flag = 0;
-		}else{
-			flag = 1;
-		}
-	}
-	//printk("====================== mute spk flag1 = %d\n",flag);
-// Rony add end
-    if(flag){
-		set_gpio_val(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), 0);	 // mute speak
-		set_gpio_mode(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), GPIO_OUTPUT_MODE);
-	}else{
-		set_gpio_val(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), 1);	 // unmute speak
-		set_gpio_mode(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), GPIO_OUTPUT_MODE);
-	}
+	// vDorst: A11 has not analog audio.
 }
 
-
-
-#define APB_BASE 0x4000
 void mute_headphone(void* codec, int flag)
 {
-	int reg_val;
-#ifdef _AML_M3_HW_DEBUG_
-	printk("***Entered %s:%s\n", __FILE__,__func__);
-#endif
-	reg_val = READ_APB_REG(APB_BASE+(0x18<<2));
-    if(flag){
-		reg_val |= 0xc0;
-		WRITE_APB_REG((APB_BASE+(0x18<<2)), reg_val);			// mute headphone
-	}else{
-		reg_val &= ~0xc0;
-		WRITE_APB_REG((APB_BASE+(0x18<<2)), reg_val);			// unmute headphone
-	}
+	// vDorst: A11 has not analog audio.
 }
-
-
 #endif
 
 #ifdef CONFIG_ANDROID_PMEM
@@ -713,12 +661,10 @@ static struct platform_device android_pmem_device =
 
 #if defined(CONFIG_AML_RTC)
 static  struct platform_device aml_rtc_device = {
-            .name            = "aml_rtc",
-            .id               = -1,
-    };
+	.name	= "aml_rtc",
+	.id     = -1,
+};
 #endif
-
-
 
 #if defined (CONFIG_AMLOGIC_VIDEOIN_MANAGER)
 static struct resource vm_resources[] = {
@@ -743,13 +689,11 @@ static void __init camera_power_on_init(void)
     udelay(1000);
     SET_CBUS_REG_MASK(HHI_ETH_CLK_CNTL,0x30f);// 24M XTAL
     SET_CBUS_REG_MASK(HHI_DEMOD_PLL_CNTL,0x232);// 24M XTAL
-
     //eth_set_pinmux(ETH_BANK0_GPIOC3_C12,ETH_CLK_OUT_GPIOC12_REG3_1, 1);		
 }
 #endif
 
 #if defined(CONFIG_SUSPEND)
-
 typedef struct {
 	char name[32];
 	unsigned bank;
@@ -759,12 +703,11 @@ typedef struct {
 	unsigned enable;
 } gpio_data_t;
 
-#define MAX_GPIO 3
+#define MAX_GPIO 2
 static gpio_data_t gpio_data[MAX_GPIO] = {
-{"GPIOD6--HDMI", 	GPIOD_bank_bit0_9(6), 	GPIOD_bit_bit0_9(6), 	GPIO_OUTPUT_MODE, 1, 1},
-{"GPIOD9--VCC5V", GPIOD_bank_bit0_9(9), 	GPIOD_bit_bit0_9(9), 	GPIO_OUTPUT_MODE, 1, 1},
-{"GPIOX29--MUTE", 	GPIOX_bank_bit0_31(29), GPIOX_bit_bit0_31(29), GPIO_OUTPUT_MODE, 1, 1},
-};	
+	{"GPIOD6--HDMI",  GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE, 1, 1},
+	{"GPIOD9--VCC5V", GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), GPIO_OUTPUT_MODE, 1, 1},
+};
 
 static void save_gpio(int port) 
 {
@@ -803,7 +746,7 @@ typedef struct {
 #define MAX_PINMUX	1
 
 pinmux_data_t pinmux_data[MAX_PINMUX] = {
-	{"HDMI", 	0, (1<<2)|(1<<1)|(1<<0), 						1},
+	{"HDMI", 0, (1<<2)|(1<<1)|(1<<0), 1},
 };
 
 static unsigned pinmux_backup[6];
@@ -831,48 +774,44 @@ static void restore_pinmux(void)
 static void set_vccx2(int power_on)
 {
 	int i;
-    if (power_on){
-
+	if (power_on) {
 		restore_pinmux();
 		for (i=0;i<MAX_GPIO;i++)
 			restore_gpio(i);
-        printk(KERN_INFO "set_vcc power up\n");
+		printk(KERN_INFO "set_vcc power up\n");
 
-		#ifdef CONFIG_AML_SUSPEND
-       suspend_state=5;
-       #endif
-//        set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
-//        set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);
-              
-    }
-    else{
-        printk(KERN_INFO "set_vcc power down\n");       			
-//        set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
-//        set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 1);
+#ifdef CONFIG_AML_SUSPEND
+		suspend_state=5;
+#endif
+		// set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
+		// set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);  
+	} else {
+		printk(KERN_INFO "set_vcc power down\n");       			
+		// set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
+		// set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 1);
 		save_pinmux();
 		for (i=0;i<MAX_GPIO;i++)
 			save_gpio(i);
-    }
+	}
 }
 
 extern void hdmi_wr_reg(unsigned long addr, unsigned long data);
 
 static void set_gpio_suspend_resume(int power_on)
 {
-    if(power_on)
-    {
-    	printk("set gpio resume.\n");
-	// HDMI
-        hdmi_wr_reg(0x8005, 2); 
-	udelay(50);
-        hdmi_wr_reg(0x8005, 1); 
-        // LED
-        WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0xff00<<0));
-    } else {
-	printk("set gpio suspend.\n");
-	// LED
-	WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0<<0));
-    }
+	if(power_on) {
+		printk("set gpio resume.\n");
+		// HDMI
+		hdmi_wr_reg(0x8005, 2); 
+		udelay(50);
+		hdmi_wr_reg(0x8005, 1); 
+		// LED
+		WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0xff00<<0));
+	} else {
+		printk("set gpio suspend.\n");
+		// LED
+		WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0<<0));
+	}
 }
 
 static struct meson_pm_config aml_pm_pdata = {
@@ -905,16 +844,16 @@ static struct platform_device aml_pm_device = {
 
 static struct aml_sw_i2c_platform aml_sw_i2c_plat = {
     .sw_pins = {
-        .scl_reg_out        = MESON_I2C_PREG_GPIOX_OUTLVL,
+        .scl_reg_out    = MESON_I2C_PREG_GPIOX_OUTLVL,
         .scl_reg_in     = MESON_I2C_PREG_GPIOX_INLVL,
-        .scl_bit            = 28, 
+        .scl_bit        = 28,
         .scl_oe         = MESON_I2C_PREG_GPIOX_OE,
-        .sda_reg_out        = MESON_I2C_PREG_GPIOX_OUTLVL,
+        .sda_reg_out    = MESON_I2C_PREG_GPIOX_OUTLVL,
         .sda_reg_in     = MESON_I2C_PREG_GPIOX_INLVL,
-        .sda_bit            = 27,    
+        .sda_bit        = 27,
         .sda_oe         = MESON_I2C_PREG_GPIOX_OE,
     },  
-    .udelay         = 5, //2,
+    .udelay             = 5, //2,
     .timeout            = 100,
 };
 
@@ -929,7 +868,6 @@ static struct platform_device aml_sw_i2c_device = {
 #define MESON3_I2C_PREG_GPIOX_OE		CBUS_REG_ADDR(PREG_PAD_GPIO4_EN_N)
 #define MESON3_I2C_PREG_GPIOX_OUTLVL	CBUS_REG_ADDR(PREG_PAD_GPIO4_O)
 #define MESON3_I2C_PREG_GPIOX_INLVL	CBUS_REG_ADDR(PREG_PAD_GPIO4_I)
-
 
 static struct aml_sw_i2c_platform aml_sw_i2c_plat_tuner = {
     .sw_pins = {
@@ -953,8 +891,6 @@ static struct platform_device aml_sw_i2c_device_tuner = {
         .platform_data = &aml_sw_i2c_plat_tuner,
     },
 };
-
-
 #endif
 
 #if defined(CONFIG_I2C_AML) || defined(CONFIG_I2C_HW_AML)
@@ -1022,7 +958,7 @@ static struct resource aml_i2c_resource1[] = {
 		.start =    MESON_I2C_MASTER_A_START,
 		.end   =    MESON_I2C_MASTER_A_END,
 		.flags =    IORESOURCE_MEM,
-  }
+	}
 };
 
 static struct resource aml_i2c_resource2[] = {
@@ -1114,8 +1050,6 @@ static struct platform_device aml_efuse_device = {
 #endif
 
 #ifdef CONFIG_AM_NAND
-
-
 static struct mtd_partition multi_partition_info[] = 
 { // 2G
 #ifndef CONFIG_AMLOGIC_SPI_NOR
@@ -1785,60 +1719,52 @@ static void disable_unused_model(void)
  }
 static void __init power_hold(void)
 {
-    printk(KERN_INFO "power hold set high!\n");
-  //  set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
-  //  set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
+	printk(KERN_INFO "power hold set high!\n");
+	// set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
+	// set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
 
         // VCC5V
         set_gpio_mode(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), 1);
-		 // hdmi power on
+	
+	// hdmi power on
         set_gpio_mode(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
 
-		// MUTE // Rony modify,used mute spk 20120611
-       //set_gpio_mode(GPIOX_bank_bit0_31(29), GPIOX_bit_bit0_31(29), GPIO_OUTPUT_MODE);
-       //set_gpio_val(GPIOX_bank_bit0_31(29), GPIOX_bit_bit0_31(29), 0);
-		set_gpio_mode(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), GPIO_OUTPUT_MODE);
-		if(board_ver_id == 0x02){
-			set_gpio_val(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), 1);	 // mute speak
-		}else{
-			set_gpio_val(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), 0);	 // mute speak
-		}
-	   
-      // PC Link
-//       set_gpio_mode(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), GPIO_OUTPUT_MODE);
-//       set_gpio_val(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), 1);
-			 
-		// VCC, set to high when suspend 
+        // PC Link
+	//       set_gpio_mode(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), GPIO_OUTPUT_MODE);
+	//       set_gpio_val(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), 1);
+
+	// VCC, set to high when suspend 
         set_gpio_mode(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), 0);
         set_gpio_mode(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), 0);
 
-     // VCCK
+	// VCCK
         set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
+	
 	 // VCCIO
         set_gpio_mode(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), 1);
 				
-    //VCCx2 power up
-    printk(KERN_INFO "set_vccx2 power up\n");
-//    set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
-//    set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);
+	//VCCx2 power up
+	printk(KERN_INFO "set_vccx2 power up\n");
+	//    set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
+	//    set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);
 }
 static void __init LED_PWM_REG0_init(void)
 {
-#if 1 	// PWM_C
+#if 1   // PWM_C
 	printk(KERN_INFO "LED_PWM_REG0_init.\n");
 	SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_2,(1<<2));
-	WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0xff00<<0));
+	WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0xff00<<0));
 	WRITE_CBUS_REG(PWM_MISC_REG_CD, (1<<0)	// enable
-																			|(0<<4)	// PWM_A_CLK_SEL: 0:XTAL;  1:ddr_pll_clk;  2:clk81;  3:sys_pll_clk;
-																			|(0x7f<<8)	// PWM_A_CLK_DIV
-																			|(1<<15)	// PWM_A_CLK_EN
-																			);
+					|(0<<4)	// PWM_A_CLK_SEL: 0:XTAL;  1:ddr_pll_clk;  2:clk81;  3:sys_pll_clk;
+					|(0x7f<<8)	// PWM_A_CLK_DIV
+					|(1<<15)	// PWM_A_CLK_EN
+	);
 #else
         // Enable VBG_EN
 	WRITE_CBUS_REG_BITS(PREG_AM_ANALOG_ADDR, 1, 0, 1);
@@ -1861,15 +1787,14 @@ static void __init LED_PWM_REG0_init(void)
 extern int (*pm_power_suspend)(void);
 #endif /*CONFIG_AML_SUSPEND*/
 
-
 // Rony add 20120611 get hardware id 
 // GPIOB23,GPIOB22,GPIOB21
 static void device_hardware_id_init() {	
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<4));
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<12));
 	WRITE_CBUS_REG( PREG_PAD_GPIO1_EN_N, READ_CBUS_REG(PREG_PAD_GPIO1_EN_N) | ((1<<21)|(1<<22)|(1<<23)) ); 
-	board_ver_id = READ_CBUS_REG(PREG_PAD_GPIO1_I) >> 21;	
-	printk("++++++++++++++++++++++++++ hardware id = 0x%x\n",board_ver_id);
+	board_ver_id = READ_CBUS_REG(PREG_PAD_GPIO1_I) >> 21;
+	printk("+++ hardware id = 0x%x +++\n",board_ver_id);
 }
 // Rony add end
 
