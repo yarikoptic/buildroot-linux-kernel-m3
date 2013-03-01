@@ -1050,8 +1050,19 @@ static struct platform_device aml_efuse_device = {
 #endif
 
 #ifdef CONFIG_AM_NAND
-static struct mtd_partition multi_partition_info[] = 
-{ // 2G
+
+/*** Default NAND layout for A11 ***
+Creating 7 MTD partitions on "nandmulti":
+4M    0x000000800000-0x000000c00000 : "logo"      : 8M
+12M   0x000000c00000-0x000001400000 : "boot"      : 8M
+20M   0x000001400000-0x000021400000 : "system"    : 512M
+532M  0x000021400000-0x000034000000 : "cache"     : 300M
+832M  0x000034000000-0x000074000000 : "NFTL_Part" : 1024M
+1856M 0x000074000000-0x000080800000 : "backup"    : 200M
+2056M 0x000080800000-0x000100000000 : "userdata"  : 2040M
+*/ 
+
+static struct mtd_partition multi_partition_info[] = { // 4G
 #ifndef CONFIG_AMLOGIC_SPI_NOR
 /* Hide uboot partition
 	{
@@ -1074,66 +1085,57 @@ static struct mtd_partition multi_partition_info[] =
 //*/
 #endif
 	{//4M for logo
-		.name = "logo",
-		.offset = 0*1024*1024,
-		.size = 4*1024*1024,
+		.name   = "logo",
+		.offset = 8*1024*1024,
+		.size   = 4*1024*1024,
 	},
 	{//8M for kernel
-		.name = "boot",
-		.offset = (0+4)*1024*1024,
-		.size = 8*1024*1024,
+		.name   = "boot",
+		.offset = (8+4)*1024*1024,
+		.size   = 8*1024*1024,
 	},
 	{//512M for android system.
-	    .name = "system",
-	    .offset = (0+4+8)*1024*1024,
-	    .size = 512*1024*1024,
+		.name   = "system",
+		.offset = (8+4+8)*1024*1024,
+		.size   = 512*1024*1024,
 	},
-	{//500M for cache
-	    .name = "cache",
-	    .offset = (0+4+8+512)*1024*1024,
-	    .size = 500*1024*1024,
+	{//300M for cache
+		.name   = "cache",
+		.offset = (8+4+8+512)*1024*1024,
+		.size   = 300*1024*1024,
 	},
-	
 #ifdef CONFIG_AML_NFTL
 	{//1G for NFTL_part
-	    .name = "NFTL_Part",
-	    .offset=(0+4+8+512+500)*1024*1024,
-	    .size=512*1024*1024,
+		.name   = "NFTL_Part",
+		.offset = (8+4+8+512+300)*1024*1024,
+		.size   = 1024*1024*1024,
 	},
-	{//other for user data
-	.name = "userdata",
-	.offset = MTDPART_OFS_APPEND,
-	.size = MTDPART_SIZ_FULL,
+	{//other 2040M for user data
+		.name = "userdata",
+		.offset = MTDPART_OFS_APPEND,
+		.size = MTDPART_SIZ_FULL,
 	},
 #else
-    {
-        .name = "userdata",
-        .offset=MTDPART_OFS_APPEND,
-        .size=MTDPART_SIZ_FULL,
-    },
+	{
+		.name = "userdata",
+		.offset=MTDPART_OFS_APPEND,
+		.size=MTDPART_SIZ_FULL,
+	},
 #endif
-
 };
 
 static void nand_set_parts(uint64_t size, struct platform_nand_chip *chip)
 {
     printk("set nand parts for chip %lldMB\n", (size/(1024*1024)));
 
-    if (size/(1024*1024) == (1024*2)) {
-        chip->partitions = multi_partition_info;
-        chip->nr_partitions = ARRAY_SIZE(multi_partition_info);
-        }
-    else {
-        // Undefined
-        chip->partitions = NULL;
-        chip->nr_partitions = 0;
-        }
+    chip->partitions = multi_partition_info;
+    chip->nr_partitions = ARRAY_SIZE(multi_partition_info);
     return;
 }
 
 static struct aml_nand_platform aml_nand_mid_platform[] = {
 #ifndef CONFIG_AMLOGIC_SPI_NOR
-{
+	{
 		.name = NAND_BOOT_NAME,
 		.chip_enable_pad = AML_NAND_CE0,
 		.ready_busy_pad = AML_NAND_CE0,
@@ -1142,12 +1144,12 @@ static struct aml_nand_platform aml_nand_mid_platform[] = {
 				.nr_chips = 1,
 				.options = (NAND_TIMING_MODE5 | NAND_ECC_BCH60_1K_MODE),
 			},
-    	},
-			.T_REA = 20,
-			.T_RHOH = 15,
+		},
+		.T_REA = 20,
+		.T_RHOH = 15,
 	},
 #endif
-{
+	{
 		.name = NAND_MULTI_NAME,
 		.chip_enable_pad = (AML_NAND_CE0 | (AML_NAND_CE1 << 4) | (AML_NAND_CE2 << 8) | (AML_NAND_CE3 << 12)),
 		.ready_busy_pad = (AML_NAND_CE0 | (AML_NAND_CE0 << 4) | (AML_NAND_CE1 << 8) | (AML_NAND_CE1 << 12)),
@@ -1159,9 +1161,9 @@ static struct aml_nand_platform aml_nand_mid_platform[] = {
 				.set_parts = nand_set_parts,
 				.options = (NAND_TIMING_MODE5 | NAND_ECC_BCH60_1K_MODE | NAND_TWO_PLANE_MODE),
 			},
-    	},
-			.T_REA = 20,
-			.T_RHOH = 15,
+		},
+		.T_REA = 20,
+		.T_RHOH = 15,
 	}
 };
 
@@ -1171,23 +1173,24 @@ struct aml_nand_device aml_nand_mid_device = {
 };
 
 static struct resource aml_nand_resources[] = {
-    {
-        .start = 0xc1108600,
-        .end = 0xc1108624,
-        .flags = IORESOURCE_MEM,
-    },
+	{
+		.start = 0xc1108600,
+		.end   = 0xc1108624,
+		.flags = IORESOURCE_MEM,
+	},
 };
 
 static struct platform_device aml_nand_device = {
-    .name = "aml_m3_nand",
-    .id = 0,
-    .num_resources = ARRAY_SIZE(aml_nand_resources),
-    .resource = aml_nand_resources,
-    .dev = {
-		.platform_data = &aml_nand_mid_device,
-    },
+	.name = "aml_m3_nand",
+	.id = 0,
+	.num_resources = ARRAY_SIZE(aml_nand_resources),
+	.resource = aml_nand_resources,
+	.dev = {
+	    .platform_data = &aml_nand_mid_device,
+	},
 };
 #endif
+
 #if  defined(CONFIG_AM_TV_OUTPUT)||defined(CONFIG_AM_TCON_OUTPUT)
 static struct resource vout_device_resources[] = {
     [0] = {
@@ -1204,6 +1207,7 @@ static struct platform_device vout_device = {
     .resource      = vout_device_resources,
 };
 #endif
+
 #if  defined(CONFIG_AM_TV_OUTPUT2) // Rony merge 20120521 
 static struct resource vout2_device_resources[] = {
     [0] = {
