@@ -1476,60 +1476,32 @@ static int __init aml_i2c_init(void)
 	return 0;
 }
 
+#define NET_EXT_CLK 1
 static void __init eth_pinmux_init(void)
 {
-	//Rony add for eth used external clock 20120509
-	//int board_hwid = 0;
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_6,(3<<17));//reg6[17/18]=0
-	
-	
-	//board_hwid = = get_hardware_id();	// Rony modify 20120611 move in device_hardware_id_init
-	if((board_ver_id == 0x00) || (board_ver_id == 0x01)) //internal Rony add id 0x01 used internal clock
-	{
-		printk("eth used internal clock\n");
-	 	eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_OUT_GPIOY0_REG6_17, 0);
-	}
-	else //external
-	{
-	  	eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_IN_GPIOY0_REG6_18, 0);
-		printk("eth used external clock\n");
-	}
-	 // end Rony add for eth used external clock 20120509
-	 
-    //power hold
-    //setbits_le32(P_PREG_AGPIO_O,(1<<8));
-    //clrbits_le32(P_PREG_AGPIO_EN_N,(1<<8));
-    //set_gpio_mode(GPIOA_bank_bit(4),GPIOA_bit_bit0_14(4),GPIO_OUTPUT_MODE);
-    //set_gpio_val(GPIOA_bank_bit(4),GPIOA_bit_bit0_14(4),1);
-
-    CLEAR_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);           // Disable the Ethernet clocks
+#ifdef NET_EXT_CLK
+	eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_IN_GPIOY0_REG6_18, 0);
+#else
+	eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_OUT_GPIOY0_REG6_17, 0);
+#endif
+	CLEAR_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);           // Disable the Ethernet clocks
 	// ---------------------------------------------
 	// Test 50Mhz Input Divide by 2
 	// ---------------------------------------------
 	// Select divide by 2
-    CLEAR_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, (1<<3));     // desc endianess "same order" 
-    CLEAR_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, (1<<2));     // ata endianess "little"
-    SET_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, (1 << 1));     // divide by 2 for 100M
-    SET_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);            // enable Ethernet clocks
-    udelay(100);
-    /* reset phy with GPIOA_23*/
-    set_gpio_mode(GPIOA_bank_bit0_27(23), GPIOA_bit_bit0_27(23), GPIO_OUTPUT_MODE);
-    set_gpio_val(GPIOA_bank_bit0_27(23), GPIOA_bit_bit0_27(23), 0);
-    udelay(100);    //GPIOA_bank_bit0_27(23) reset end;
-    set_gpio_val(GPIOA_bank_bit0_27(23), GPIOA_bit_bit0_27(23), 1);
-    udelay(100);    //waiting reset end;
-#if 0
-    CLEAR_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);
-    SET_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, (1 << 1));
-    SET_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);
-    udelay(100);
-    /*reset*/
+        CLEAR_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, (1<<3));     // desc endianess "same order" 
+	CLEAR_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, (1<<2));     // ata endianess "little"
+	SET_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, (1 << 1));     // divide by 2 for 100M
+	SET_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);            // enable Ethernet clocks
+	udelay(100);
 
-//  set_gpio_mode(GPIOE_bank_bit16_21(16),GPIOE_bit_bit16_21(16),GPIO_OUTPUT_MODE);
-//  set_gpio_val(GPIOE_bank_bit16_21(16),GPIOE_bit_bit16_21(16),0);
-//  udelay(100);    //GPIOE_bank_bit16_21(16) reset end;
-//  set_gpio_val(GPIOE_bank_bit16_21(16),GPIOE_bit_bit16_21(16),1);
-#endif
+	// ethernet reset
+	set_gpio_mode(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), GPIO_OUTPUT_MODE);
+	set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 0);
+	mdelay(100);
+	set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 1);
+
 }
 
 static void __init gpio_init(void)
