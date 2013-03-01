@@ -1426,24 +1426,9 @@ static struct platform_device __initdata *platform_devs[] = {
 };
 
 static struct i2c_board_info __initdata aml_i2c_bus_info[] = {
-
-#ifdef CONFIG_AT24CXX
-	{
-		I2C_BOARD_INFO("at24cxx",  0x50),
-	},
-#endif
-
-#ifdef CONFIG_AT88SCXX
 	{
 		I2C_BOARD_INFO("at88scxx",  0xB6),
 	},
-#endif
-
-#ifdef CONFIG_IR810_POWEROFF
-	{
-		I2C_BOARD_INFO("ir810_poweroff",  0x60),
-	},
-#endif
 };
 static struct i2c_board_info __initdata aml_i2c_bus_info_1[] = {
 };
