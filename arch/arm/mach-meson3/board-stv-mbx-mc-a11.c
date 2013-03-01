@@ -52,23 +52,16 @@
 #include <mach/clk_set.h>
 #include "board-stv-mbx-mc.h"
 
-
 #ifdef CONFIG_ANDROID_PMEM
 #include <linux/slab.h>
 #include <linux/dma-mapping.h>
 #include <linux/android_pmem.h>
 #endif
 
-
-
-
-
 #ifdef CONFIG_AMLOGIC_PM
 #include <linux/power_supply.h>
 #include <linux/aml_power.h>
 #endif
-
-
 
 #ifdef CONFIG_USB_ANDROID
 #include <linux/usb/android_composite.h>
@@ -82,11 +75,6 @@
 #include <media/amlogic/aml_camera.h>
 #endif
 
-
-
-
-
-
 #ifdef CONFIG_EFUSE
 #include <linux/efuse.h>
 #endif
@@ -97,24 +85,24 @@
 
 #if defined(CONFIG_AML_HDMI_TX)
 static struct hdmi_phy_set_data brd_phy_data[] = {
-//    {27, 0xf7, 0x0},    // an example: set Reg0xf7 to 0 in 27MHz
-    {-1,   -1},         //end of phy setting
+	// {27, 0xf7, 0x0},    // an example: set Reg0xf7 to 0 in 27MHz
+	{-1,   -1},         //end of phy setting
 };
 
 static struct hdmi_config_platform_data aml_hdmi_pdata ={
-    .hdmi_5v_ctrl = NULL,
-    .hdmi_3v3_ctrl = NULL,
-    .hdmi_pll_vdd_ctrl = NULL,
-    .hdmi_sspll_ctrl = NULL,
-    .phy_data = brd_phy_data,
+	.hdmi_5v_ctrl = NULL,
+	.hdmi_3v3_ctrl = NULL,
+	.hdmi_pll_vdd_ctrl = NULL,
+	.hdmi_sspll_ctrl = NULL,
+	.phy_data = brd_phy_data,
 };
 
 static struct platform_device aml_hdmi_device = {
-    .name = "amhdmitx",
-    .id   = -1,
-    .dev  = {
-        .platform_data = &aml_hdmi_pdata,
-    }
+	.name = "amhdmitx",
+	.id   = -1,
+	.dev  = {
+		.platform_data = &aml_hdmi_pdata,
+	}
 };
 #endif
 
@@ -449,7 +437,6 @@ static struct lm_device usb_ld_b = {
 };
 
 #endif
-
 
 /* usb wifi power 1:power on  0:power off */
 void extern_usb_wifi_power(int is_power)
@@ -1463,7 +1450,6 @@ static struct i2c_board_info __initdata aml_i2c_bus_info_1[] = {
 
 static struct i2c_board_info __initdata aml_i2c_bus_info_2[] = {
 };
-
 
 static int __init aml_i2c_init(void)
 {
