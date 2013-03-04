@@ -1498,42 +1498,6 @@ static void __init eth_pinmux_init(void)
 	meson_eth_reset();
 }
 
-static void __init gpio_init(void)
-{
-	printk(KERN_INFO "power hold set high!\n");
-	// set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
-	// set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
-
-        // 5V -- GPIO D9
-        set_gpio_mode(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), 1);
-
-	// 3.3v -- GPIO A2
-        set_gpio_mode(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), 1);
-
-	// 1.28v -- GPIO A6
-        set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
-
-	// 1.2v -- GPIO A4
-        set_gpio_mode(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), 0);
-
-	// ddr1.5v -- GPIO A5
-        set_gpio_mode(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), 0);
-	
-	// hdmi power on, -- GPIO D7
-	set_gpio_mode(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE);
-	set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
-
-	//VCCx2 power up -- GPIO A26
-	printk(KERN_INFO "set_vccx2 power up\n");
-	set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
-	set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);
-}
-
 char board_id[8];
 static int __init get_board_id(char* str)
 {
