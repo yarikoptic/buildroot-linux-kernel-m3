@@ -466,38 +466,6 @@ static struct platform_device deinterlace_device = {
 };
 #endif
 
-#if defined(CONFIG_TVIN_VDIN)
-static struct resource vdin_resources[] = {
-    [0] = {
-        .start =  VDIN_ADDR_START,  //pbufAddr
-        .end   = VDIN_ADDR_END,     //pbufAddr + size
-        .flags = IORESOURCE_MEM,
-    },
-    [1] = {
-        .start = VDIN_ADDR_START,
-        .end   = VDIN_ADDR_END,
-        .flags = IORESOURCE_MEM,
-    },
-    [2] = {
-        .start = INT_VDIN_VSYNC,
-        .end   = INT_VDIN_VSYNC,
-        .flags = IORESOURCE_IRQ,
-    },
-    [3] = {
-        .start = INT_VDIN_VSYNC,
-        .end   = INT_VDIN_VSYNC,
-        .flags = IORESOURCE_IRQ,
-    },
-};
-
-static struct platform_device vdin_device = {
-    .name       = "vdin",
-    .id         = -1,
-    .num_resources = ARRAY_SIZE(vdin_resources),
-    .resource      = vdin_resources,
-};
-#endif
-
 #if defined(CONFIG_CARDREADER)
 static struct resource amlogic_card_resource[] = {
     [0] = {
