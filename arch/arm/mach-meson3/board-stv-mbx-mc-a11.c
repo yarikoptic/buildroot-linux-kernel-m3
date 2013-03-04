@@ -593,23 +593,6 @@ static  struct platform_device aml_rtc_device = {
 };
 #endif
 
-#if defined (CONFIG_AMLOGIC_VIDEOIN_MANAGER)
-static struct resource vm_resources[] = {
-    [0] = {
-        .start =  VM_ADDR_START,
-        .end   = VM_ADDR_END,
-        .flags = IORESOURCE_MEM,
-    },
-};
-static struct platform_device vm_device =
-{
-	.name = "vm",
-	.id = 0,
-    .num_resources = ARRAY_SIZE(vm_resources),
-    .resource      = vm_resources,
-};
-#endif /* AMLOGIC_VIDEOIN_MANAGER */
-
 #if defined(CONFIG_SUSPEND)
 typedef struct {
 	char name[32];
@@ -620,10 +603,9 @@ typedef struct {
 	unsigned enable;
 } gpio_data_t;
 
-#define MAX_GPIO 2
+#define MAX_GPIO 1
 static gpio_data_t gpio_data[MAX_GPIO] = {
 	{"GPIOD6--HDMI",  GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE, 1, 1},
-	{"GPIOD9--VCC5V", GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), GPIO_OUTPUT_MODE, 1, 1},
 };
 
 static void save_gpio(int port) 
