@@ -678,19 +678,16 @@ static void set_vccx2(int power_on)
 		for (i=0;i<MAX_GPIO;i++)
 			restore_gpio(i);
 		printk(KERN_INFO "set_vcc power up\n");
-
 #ifdef CONFIG_AML_SUSPEND
 		suspend_state=5;
 #endif
-		// set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
-		// set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);  
+		/* vDorst: Idea to try to enable vccio and vcck here. */
 	} else {
 		printk(KERN_INFO "set_vcc power down\n");       			
-		// set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
-		// set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 1);
 		save_pinmux();
 		for (i=0;i<MAX_GPIO;i++)
 			save_gpio(i);
+		/* vDorst: Idea to try to enable vccio and vcck here. */
 	}
 }
 
