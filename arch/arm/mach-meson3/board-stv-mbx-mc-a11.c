@@ -1243,7 +1243,10 @@ static void __init power_hold(void)
 
 static void __init LED_PWM_REG0_init(void)
 {
-#if 1   // PWM_C
+	// PWM_C
+	/* vDorst: This code is uses for making an adjustable core voltage. 
+	    I don't think that we use that. 
+	*/ 
 	printk(KERN_INFO "LED_PWM_REG0_init.\n");
 	SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_2,(1<<2));
 	WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0xff00<<0));
@@ -1252,21 +1255,6 @@ static void __init LED_PWM_REG0_init(void)
 					|(0x7f<<8)	// PWM_A_CLK_DIV
 					|(1<<15)	// PWM_A_CLK_EN
 	);
-#else
-        // Enable VBG_EN
-	WRITE_CBUS_REG_BITS(PREG_AM_ANALOG_ADDR, 1, 0, 1);
-	// wire pm_gpioA_7_led_pwm = pin_mux_reg0[22];
-	WRITE_CBUS_REG(LED_PWM_REG0,(0 << 31)   |       // disable the overall circuit
-    	                            (0 << 30)   |       // 1:Closed Loop  0:Open Loop
-        	                    (0 << 16)   |       // PWM total count
-                	            (0 << 13)   |       // Enable
-                        	    (1 << 12)   |       // enable
-                            	    (0 << 10)   |       // test
-                            	    (7 << 7)    |       // CS0 REF, Voltage FeedBack: about 0.505V
-                            	    (7 << 4)    |       // CS1 REF, Current FeedBack: about 0.505V
-                            	    READ_CBUS_REG(LED_PWM_REG0)&0x0f);           // DIMCTL Analog dimmer
-	WRITE_CBUS_REG_BITS(LED_PWM_REG0,1,0,4); //adust cpu1.2v   to 1.26V     
-#endif
 }
 
 #ifdef CONFIG_AML_SUSPEND
