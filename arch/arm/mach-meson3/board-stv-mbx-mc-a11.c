@@ -203,27 +203,28 @@ int _key_code_list[] = {KEY_POWER};
 
 static inline int key_input_init_func(void)
 {
-        set_gpio_mode(GPIOAO_bank_bit0_11(3), GPIOAO_bit_bit0_11(3), GPIO_INPUT_MODE);
-//    WRITE_AOBUS_REG(AO_RTC_ADDR0, (READ_AOBUS_REG(AO_RTC_ADDR0) &~(1<<11)));
-//    WRITE_AOBUS_REG(AO_RTC_ADDR1, (READ_AOBUS_REG(AO_RTC_ADDR1) &~(1<<3)));
-    return 0;
+	// GPIO AO3
+	set_gpio_mode(GPIOAO_bank_bit0_11(3), GPIOAO_bit_bit0_11(3), GPIO_INPUT_MODE);
+	//    WRITE_AOBUS_REG(AO_RTC_ADDR0, (READ_AOBUS_REG(AO_RTC_ADDR0) &~(1<<11)));
+	//    WRITE_AOBUS_REG(AO_RTC_ADDR1, (READ_AOBUS_REG(AO_RTC_ADDR1) &~(1<<3)));
+	return 0;
 }
 static inline int key_scan(int *key_state_list)
 {
-    int ret = 0;
-	 // GPIOAO_3
-	 #ifdef CONFIG_SUSPEND
-	 if(suspend_state)
-	 	{
-	 	// forse power key down
-	 	suspend_state--;
-	 	key_state_list[0] = 1;
-	 	}
-	 else
-	 #endif
-    key_state_list[0] = get_gpio_val(GPIOAO_bank_bit0_11(3), GPIOAO_bit_bit0_11(3))?0:1;
-//    key_state_list[0] = ((READ_AOBUS_REG(AO_RTC_ADDR1) >> 2) & 1) ? 0 : 1;
-    return ret;
+	int ret = 0;
+	// GPIOAO_3
+#ifdef CONFIG_SUSPEND
+	if(suspend_state)
+		{
+		// forse power key down
+		suspend_state--;
+		key_state_list[0] = 1;
+		}
+	else
+#endif
+	key_state_list[0] = get_gpio_val(GPIOAO_bank_bit0_11(3), GPIOAO_bit_bit0_11(3))?0:1;
+	// key_state_list[0] = ((READ_AOBUS_REG(AO_RTC_ADDR1) >> 2) & 1) ? 0 : 1;
+	return ret;
 }
 
 static  struct key_input_platform_data  key_input_pdata = {
@@ -1315,10 +1316,12 @@ static struct platform_device aml_wdt_device = {
 #define ETH_MODE_RMII_EXTERNAL
 static void meson_eth_clock_enable(int flag)
 {
+    printk("meson_eth_clock_enable: %x", (unsigned int)flag );
 }
 
 static void meson_eth_reset(void)
 {
+    printk("meson_eth_reset");
     set_gpio_mode(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), GPIO_OUTPUT_MODE);
     set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 0);
     mdelay(100);
@@ -1469,12 +1472,17 @@ static int __init aml_i2c_init(void)
 #define NET_EXT_CLK 1
 static void __init eth_pinmux_init(void)
 {
+	printk("eth_pinmux_init");
+
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_6,(3<<17));//reg6[17/18]=0
 #ifdef NET_EXT_CLK
+	printk("eth_pinmux: use external clk.");
 	eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_IN_GPIOY0_REG6_18, 0);
 #else
+	printk("eth_pinmux: use internal clk.");
 	eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_OUT_GPIOY0_REG6_17, 0);
 #endif
+	printk("eth_pinmux: setup .");
 	CLEAR_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);           // Disable the Ethernet clocks
 	// ---------------------------------------------
 	// Test 50Mhz Input Divide by 2
@@ -1486,12 +1494,8 @@ static void __init eth_pinmux_init(void)
 	SET_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);            // enable Ethernet clocks
 	udelay(100);
 
-	// ethernet reset
-	set_gpio_mode(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), GPIO_OUTPUT_MODE);
-	set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 0);
-	mdelay(100);
-	set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 1);
-
+	/* Reset Ethernet */
+	meson_eth_reset();
 }
 
 static void __init gpio_init(void)
@@ -1500,31 +1504,31 @@ static void __init gpio_init(void)
 	// set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
 	// set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
 
-        // 5V
+        // 5V -- GPIO D9
         set_gpio_mode(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), 1);
 
-	// 3.3v
+	// 3.3v -- GPIO A2
         set_gpio_mode(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), 1);
 
-	// 1.28v
+	// 1.28v -- GPIO A6
         set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
 
-	// 1.2v
+	// 1.2v -- GPIO A4
         set_gpio_mode(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), 0);
 
-	// ddr1.5v
+	// ddr1.5v -- GPIO A5
         set_gpio_mode(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), 0);
 	
-	// hdmi power on
+	// hdmi power on, -- GPIO D7
 	set_gpio_mode(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE);
 	set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
 
-	//VCCx2 power up
+	//VCCx2 power up -- GPIO A26
 	printk(KERN_INFO "set_vccx2 power up\n");
 	set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
 	set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);
@@ -1550,7 +1554,7 @@ static void __init  device_clk_setting(void)
 {
 	/*eth clk*/
 #ifdef NET_EXT_CLK
-	eth_clk_set(7, (50 * CLK_1M), (50 * CLK_1M), 1);
+	eth_clk_set(ETH_CLKSRC_EXT_XTAL_CLK, (50 * CLK_1M), (50 * CLK_1M), 1);
 #else
 	eth_clk_set(ETH_CLKSRC_MISC_CLK, get_misc_pll_clk(), (50 * CLK_1M), 0);
 #endif
@@ -1617,11 +1621,11 @@ static void __init power_hold(void)
 	// set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
 	// set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
 
-        // VCC5V
+        // VCC5V -- GPIO D9
         set_gpio_mode(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), 1);
 	
-	// hdmi power on
+	// hdmi power on -- GPIO D6
         set_gpio_mode(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
 
@@ -1629,25 +1633,26 @@ static void __init power_hold(void)
 	//       set_gpio_mode(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), GPIO_OUTPUT_MODE);
 	//       set_gpio_val(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), 1);
 
-	// VCC, set to high when suspend 
+	// VCC, set to high when suspend  -- GPIOAO4 GPIOAO5
         set_gpio_mode(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), 0);
         set_gpio_mode(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), 0);
 
-	// VCCK
+	// VCCK -- GPIOAO6
         set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
 	
-	 // VCCIO
+	 // VCCIO -- GPIOAO2
         set_gpio_mode(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), 1);
 				
-	//VCCx2 power up
+	//VCCx2 power up -- GPIOAO26
 	printk(KERN_INFO "set_vccx2 power up\n");
 	//    set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
 	//    set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);
 }
+
 static void __init LED_PWM_REG0_init(void)
 {
 #if 1   // PWM_C
@@ -1683,7 +1688,7 @@ extern int (*pm_power_suspend)(void);
 
 // Rony add 20120611 get hardware id 
 // GPIOB23,GPIOB22,GPIOB21
-static void device_hardware_id_init() {	
+static void device_hardware_id_init(void) {	
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<4));
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<12));
 	WRITE_CBUS_REG( PREG_PAD_GPIO1_EN_N, READ_CBUS_REG(PREG_PAD_GPIO1_EN_N) | ((1<<21)|(1<<22)|(1<<23)) ); 
