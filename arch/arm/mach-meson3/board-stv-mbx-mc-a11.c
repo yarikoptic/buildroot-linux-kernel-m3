@@ -1226,8 +1226,8 @@ static void __init power_hold(void)
 	printk(KERN_INFO "power hold set high!\n");
 
 	printk(KERN_INFO "set_vccio power up\n");
-	// VCCIO +2V5 GPIO AO2, ACTIVE LOW.
-	set_gpio_val(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), 0);
+	// VCCIO +2V5 GPIO AO2, ACTIVE HIGH
+	set_gpio_val(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), 1);
 	set_gpio_mode(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
 
 	printk(KERN_INFO "set_vcck power up\n");
