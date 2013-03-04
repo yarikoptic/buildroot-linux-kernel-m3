@@ -413,31 +413,6 @@ static struct lm_device usb_ld_b = {
 
 #endif
 
-/* usb wifi power 1:power on  0:power off */
-void extern_usb_wifi_power(int is_power)
-{
-/*    printk(KERN_INFO "usb_wifi_power %s\n", is_power ? "On" : "Off");	
-	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_1,(1<<6));
-	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<15));
-	//Rony add,if board_ver_id equal 0x02 then inverse wifi power level 20120612
-	if((board_ver_id == 0x02) || (board_ver_id == 0x03)){
-		if(is_power){
-			is_power = 0;
-		}else{
-			is_power = 1;
-		}
-	}
-	//Rony add end
-    set_gpio_mode(GPIOC_bank_bit0_15(5), GPIOC_bit_bit0_15(5), GPIO_OUTPUT_MODE);
-	if(is_power)
-       set_gpio_val(GPIOC_bank_bit0_15(5), GPIOC_bit_bit0_15(5), 1);
-	else
-       set_gpio_val(GPIOC_bank_bit0_15(5), GPIOC_bit_bit0_15(5), 0);  
-   */          
-}
-
-EXPORT_SYMBOL(extern_usb_wifi_power);
-
 #if defined(CONFIG_AM_STREAMING)
 static struct resource codec_resources[] = {
     [0] = {
@@ -668,6 +643,133 @@ static gpio_data_t gpio_data[MAX_GPIO] = {
 	{"GPIOD6--HDMI",  GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE, 1, 1},
 	{"GPIOD9--VCC5V", GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), GPIO_OUTPUT_MODE, 1, 1},
 };
+
+static void print_gpio_status(void)
+{
+    unsigned int pin, bank, bit, value;
+    int mode;
+
+    printk("### Print GPIO STATUS###\n");
+
+// #define GPIOA_bank_bit0_27(bit)     (PREG_PAD_GPIO0)
+// #define GPIOA_bit_bit0_27(bit)      (bit)
+
+    /* GPIO A */ 
+    printk("# GPIO A #\n");
+    for (pin=0;pin<28;pin++) {
+	bank = GPIOA_bank_bit0_27(pin);
+	bit  = GPIOA_bit_bit0_27(pin);
+	mode = get_gpio_mode(bank, bit);
+	if (mode == GPIO_OUTPUT_MODE) {
+	    value = get_gpio_val(bank, bit);
+	    printk("GPIO A%d: out: %x\n" , pin, value);
+	}
+    }
+
+//#define GPIOB_bank_bit0_23(bit)     (PREG_PAD_GPIO1)
+//#define GPIOB_bit_bit0_23(bit)      (bit)
+
+    /* GPIO B */ 
+    printk("# GPIO B #\n");
+    for (pin=0;pin<24;pin++) {
+	bank = GPIOB_bank_bit0_23(pin);
+	bit  = GPIOB_bit_bit0_23(pin);
+	mode = get_gpio_mode(bank, bit);
+	if (mode == GPIO_OUTPUT_MODE) {
+	    value = get_gpio_val(bank, bit);
+	    printk("GPIO B%d: out: %x\n" , pin, value);
+	}
+    }
+
+// #define GPIOC_bank_bit0_15(bit)     (PREG_PAD_GPIO2)
+// #define GPIOC_bit_bit0_15(bit)      (bit)
+
+    /* GPIO C */ 
+    printk("# GPIO C #\n");
+    for (pin=0;pin<16;pin++) {
+	bank = GPIOC_bank_bit0_15(pin);
+	bit  = GPIOC_bit_bit0_15(pin);
+	mode = get_gpio_mode(bank, bit);
+	if (mode == GPIO_OUTPUT_MODE) {
+	    value = get_gpio_val(bank, bit);
+	    printk("GPIO C%d: out: %x\n" , pin, value);
+	}
+    }
+
+// #define GPIOAO_bank_bit0_11(bit)    (PREG_PAD_GPIOAO)
+// #define GPIOAO_bit_bit0_11(bit)     (bit)
+
+    /* GPIO AO */ 
+    printk("# GPIO AO #\n");
+    for (pin=0;pin<11;pin++) {
+	bank = GPIOAO_bank_bit0_11(pin);
+	bit  = GPIOAO_bit_bit0_11(pin);
+	mode = get_gpio_mode(bank, bit);
+	if (mode == GPIO_OUTPUT_MODE) {
+	    value = get_gpio_val(bank, bit);
+	    printk("GPIO AO%d: out: %x\n" , pin, value);
+	}
+    }
+
+// #define GPIOD_bank_bit0_9(bit)      (PREG_PAD_GPIO2)
+// #define GPIOD_bit_bit0_9(bit)       (bit+16)
+
+    /* GPIO D */ 
+    printk("# GPIO D #\n");
+    for (pin=0;pin<16;pin++) {
+	bank = GPIOD_bank_bit0_9(pin);
+	bit  = GPIOD_bit_bit0_9(pin);
+	mode = get_gpio_mode(bank, bit);
+	if (mode == GPIO_OUTPUT_MODE) {
+	    value = get_gpio_val(bank, bit);
+	    printk("GPIO D%d: out: %x\n" , pin, value);
+	}
+    }
+
+// #define GPIOX_bank_bit0_31(bit)     (PREG_PAD_GPIO4)
+// #define GPIOX_bit_bit0_31(bit)      (bit)
+
+    /* GPIO X */ 
+    printk("# GPIO X #\n");
+    for (pin=0;pin<32;pin++) {
+	bank = GPIOX_bank_bit0_31(pin);
+	bit  = GPIOX_bit_bit0_31(pin);
+	mode = get_gpio_mode(bank, bit);
+	if (mode == GPIO_OUTPUT_MODE) {
+	    value = get_gpio_val(bank, bit);
+	    printk("GPIO X%d: out: %x\n" , pin, value);
+	}
+    }
+
+// #define GPIOX_bank_bit32_35(bit)    (PREG_PAD_GPIO3)
+// #define GPIOX_bit_bit32_35(bit)     (bit- 32 + 20)
+
+    /* GPIO X */ 
+    for (pin=32;pin<36;pin++) {
+	bank = GPIOX_bank_bit32_35(pin);
+	bit  = GPIOX_bit_bit32_35(pin);
+	mode = get_gpio_mode(bank, bit);
+	if (mode == GPIO_OUTPUT_MODE) {
+	    value = get_gpio_val(bank, bit);
+	    printk("GPIO X%d: out: %x\n" , pin, value);
+	}
+    }
+
+// #define GPIOY_bank_bit0_22(bit)     (PREG_PAD_GPIO5)
+// #define GPIOY_bit_bit0_22(bit)      (bit)
+
+    /* GPIO Y */ 
+    printk("# GPIO Y #\n");
+    for (pin=0;pin<23;pin++) {
+	bank = GPIOY_bank_bit0_22(pin);
+	bit  = GPIOY_bit_bit0_22(pin);
+	mode = get_gpio_mode(bank, bit);
+	if (mode == GPIO_OUTPUT_MODE) {
+	    value = get_gpio_val(bank, bit);
+	    printk("GPIO Y%d: out: %x\n" , pin, value);
+	}
+    }
+}
 
 static void save_gpio(int port) 
 {
@@ -1588,11 +1690,11 @@ static __init void m1_init_machine(void)
 #ifdef CONFIG_AML_SUSPEND
 	pm_power_suspend = meson_power_suspend;
 #endif /*CONFIG_AML_SUSPEND*/
+	print_gpio_status();
 	device_hardware_id_init();
 	power_hold();
 	device_clk_setting();
 	device_pinmux_init();
-	extern_usb_wifi_power(0);
 	LED_PWM_REG0_init();
 	platform_add_devices(platform_devs, ARRAY_SIZE(platform_devs));
 
