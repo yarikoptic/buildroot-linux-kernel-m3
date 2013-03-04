@@ -644,133 +644,6 @@ static gpio_data_t gpio_data[MAX_GPIO] = {
 	{"GPIOD9--VCC5V", GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), GPIO_OUTPUT_MODE, 1, 1},
 };
 
-static void print_gpio_status(void)
-{
-    unsigned int pin, bank, bit, value;
-    int mode;
-
-    printk("### Print GPIO STATUS###\n");
-
-// #define GPIOA_bank_bit0_27(bit)     (PREG_PAD_GPIO0)
-// #define GPIOA_bit_bit0_27(bit)      (bit)
-
-    /* GPIO A */ 
-    printk("# GPIO A #\n");
-    for (pin=0;pin<28;pin++) {
-	bank = GPIOA_bank_bit0_27(pin);
-	bit  = GPIOA_bit_bit0_27(pin);
-	mode = get_gpio_mode(bank, bit);
-	if (mode == GPIO_OUTPUT_MODE) {
-	    value = get_gpio_val(bank, bit);
-	    printk("GPIO A%d: out: %x\n" , pin, value);
-	}
-    }
-
-//#define GPIOB_bank_bit0_23(bit)     (PREG_PAD_GPIO1)
-//#define GPIOB_bit_bit0_23(bit)      (bit)
-
-    /* GPIO B */ 
-    printk("# GPIO B #\n");
-    for (pin=0;pin<24;pin++) {
-	bank = GPIOB_bank_bit0_23(pin);
-	bit  = GPIOB_bit_bit0_23(pin);
-	mode = get_gpio_mode(bank, bit);
-	if (mode == GPIO_OUTPUT_MODE) {
-	    value = get_gpio_val(bank, bit);
-	    printk("GPIO B%d: out: %x\n" , pin, value);
-	}
-    }
-
-// #define GPIOC_bank_bit0_15(bit)     (PREG_PAD_GPIO2)
-// #define GPIOC_bit_bit0_15(bit)      (bit)
-
-    /* GPIO C */ 
-    printk("# GPIO C #\n");
-    for (pin=0;pin<16;pin++) {
-	bank = GPIOC_bank_bit0_15(pin);
-	bit  = GPIOC_bit_bit0_15(pin);
-	mode = get_gpio_mode(bank, bit);
-	if (mode == GPIO_OUTPUT_MODE) {
-	    value = get_gpio_val(bank, bit);
-	    printk("GPIO C%d: out: %x\n" , pin, value);
-	}
-    }
-
-// #define GPIOAO_bank_bit0_11(bit)    (PREG_PAD_GPIOAO)
-// #define GPIOAO_bit_bit0_11(bit)     (bit)
-
-    /* GPIO AO */ 
-    printk("# GPIO AO #\n");
-    for (pin=0;pin<11;pin++) {
-	bank = GPIOAO_bank_bit0_11(pin);
-	bit  = GPIOAO_bit_bit0_11(pin);
-	mode = get_gpio_mode(bank, bit);
-	if (mode == GPIO_OUTPUT_MODE) {
-	    value = get_gpio_val(bank, bit);
-	    printk("GPIO AO%d: out: %x\n" , pin, value);
-	}
-    }
-
-// #define GPIOD_bank_bit0_9(bit)      (PREG_PAD_GPIO2)
-// #define GPIOD_bit_bit0_9(bit)       (bit+16)
-
-    /* GPIO D */ 
-    printk("# GPIO D #\n");
-    for (pin=0;pin<16;pin++) {
-	bank = GPIOD_bank_bit0_9(pin);
-	bit  = GPIOD_bit_bit0_9(pin);
-	mode = get_gpio_mode(bank, bit);
-	if (mode == GPIO_OUTPUT_MODE) {
-	    value = get_gpio_val(bank, bit);
-	    printk("GPIO D%d: out: %x\n" , pin, value);
-	}
-    }
-
-// #define GPIOX_bank_bit0_31(bit)     (PREG_PAD_GPIO4)
-// #define GPIOX_bit_bit0_31(bit)      (bit)
-
-    /* GPIO X */ 
-    printk("# GPIO X #\n");
-    for (pin=0;pin<32;pin++) {
-	bank = GPIOX_bank_bit0_31(pin);
-	bit  = GPIOX_bit_bit0_31(pin);
-	mode = get_gpio_mode(bank, bit);
-	if (mode == GPIO_OUTPUT_MODE) {
-	    value = get_gpio_val(bank, bit);
-	    printk("GPIO X%d: out: %x\n" , pin, value);
-	}
-    }
-
-// #define GPIOX_bank_bit32_35(bit)    (PREG_PAD_GPIO3)
-// #define GPIOX_bit_bit32_35(bit)     (bit- 32 + 20)
-
-    /* GPIO X */ 
-    for (pin=32;pin<36;pin++) {
-	bank = GPIOX_bank_bit32_35(pin);
-	bit  = GPIOX_bit_bit32_35(pin);
-	mode = get_gpio_mode(bank, bit);
-	if (mode == GPIO_OUTPUT_MODE) {
-	    value = get_gpio_val(bank, bit);
-	    printk("GPIO X%d: out: %x\n" , pin, value);
-	}
-    }
-
-// #define GPIOY_bank_bit0_22(bit)     (PREG_PAD_GPIO5)
-// #define GPIOY_bit_bit0_22(bit)      (bit)
-
-    /* GPIO Y */ 
-    printk("# GPIO Y #\n");
-    for (pin=0;pin<23;pin++) {
-	bank = GPIOY_bank_bit0_22(pin);
-	bit  = GPIOY_bit_bit0_22(pin);
-	mode = get_gpio_mode(bank, bit);
-	if (mode == GPIO_OUTPUT_MODE) {
-	    value = get_gpio_val(bank, bit);
-	    printk("GPIO Y%d: out: %x\n" , pin, value);
-	}
-    }
-}
-
 static void save_gpio(int port) 
 {
 	gpio_data[port].mode = get_gpio_mode(gpio_data[port].bank, gpio_data[port].bit);
@@ -1604,42 +1477,25 @@ static void disable_unused_model(void)
 //    CLK_GATE_OFF(WIFI);
     video_dac_disable();
  }
+
 static void __init power_hold(void)
 {
 	printk(KERN_INFO "power hold set high!\n");
-	// set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
-	// set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
 
-        // VCC5V -- GPIO D9
-        set_gpio_mode(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOD_bank_bit0_9(9), GPIOD_bit_bit0_9(9), 1);
-	
-	// hdmi power on -- GPIO D6
+	printk(KERN_INFO "set_vccio power up\n");
+	// VCCIO +2V5 GPIO AO2, ACTIVE LOW.
+	set_gpio_val(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), 0);
+	set_gpio_mode(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
+
+	printk(KERN_INFO "set_vcck power up\n");
+	// VCCK +5V GPIO AO6, ACTIVE HIGH.
+	set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(2), 1);
+	set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
+
+	printk(KERN_INFO "set_hdmi power up\n");
+	// HDMI Power +5V -- GPIO D6, ACTIVE HIGH
         set_gpio_mode(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE);
         set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
-
-        // PC Link
-	//       set_gpio_mode(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), GPIO_OUTPUT_MODE);
-	//       set_gpio_val(GPIOC_bank_bit0_15(4), GPIOC_bit_bit0_15(4), 1);
-
-	// VCC, set to high when suspend  -- GPIOAO4 GPIOAO5
-        set_gpio_mode(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOAO_bank_bit0_11(4), GPIOAO_bit_bit0_11(4), 0);
-        set_gpio_mode(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOAO_bank_bit0_11(5), GPIOAO_bit_bit0_11(5), 0);
-
-	// VCCK -- GPIOAO6
-        set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 1);
-	
-	 // VCCIO -- GPIOAO2
-        set_gpio_mode(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), 1);
-				
-	//VCCx2 power up -- GPIOAO26
-	printk(KERN_INFO "set_vccx2 power up\n");
-	//    set_gpio_mode(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), GPIO_OUTPUT_MODE);
-	//    set_gpio_val(GPIOA_bank_bit0_27(26), GPIOA_bit_bit0_27(26), 0);
 }
 
 static void __init LED_PWM_REG0_init(void)
@@ -1690,7 +1546,6 @@ static __init void m1_init_machine(void)
 #ifdef CONFIG_AML_SUSPEND
 	pm_power_suspend = meson_power_suspend;
 #endif /*CONFIG_AML_SUSPEND*/
-	print_gpio_status();
 	device_hardware_id_init();
 	power_hold();
 	device_clk_setting();
@@ -1703,7 +1558,7 @@ static __init void m1_init_machine(void)
 	set_usb_phy_clk(USB_PHY_CLOCK_SEL_XTAL_DIV2);
 	set_usb_phy_id_mode(USB_PHY_PORT_A, USB_PHY_MODE_SW_HOST);
 	lm_device_register(&usb_ld_a);
-	set_usb_phy_id_mode(USB_PHY_PORT_B,USB_PHY_MODE_SW_HOST);
+	set_usb_phy_id_mode(USB_PHY_PORT_B, USB_PHY_MODE_SW_HOST);
 	lm_device_register(&usb_ld_b);
 #endif
 	disable_unused_model();
