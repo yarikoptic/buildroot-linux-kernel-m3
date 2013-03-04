@@ -107,8 +107,6 @@ static struct platform_device aml_hdmi_device = {
 static int suspend_state=0;
 #endif
 
-static int board_ver_id = 0; // Rony add 20120611 get hardware id 
-
 #if defined(CONFIG_JPEGLOGO)
 static struct resource jpeglogo_resources[] = {
     [0] = {
@@ -383,31 +381,9 @@ static void set_usb_a_vbus_power(char is_power_on)
 }
 
 static void set_usb_b_vbus_power(char is_power_on)
-{ /*wifi rtl8188cus power control*/
-#define USB_B_POW_GPIO         GPIOC_bank_bit0_15(5)
-#define USB_B_POW_GPIO_BIT     GPIOC_bit_bit0_15(5)
-#define USB_B_POW_GPIO_BIT_ON   1
-#define USB_B_POW_GPIO_BIT_OFF  0
-	//Rony add,if board_ver_id equal 0x02 then inverse wifi power level 20120612
-	if((board_ver_id == 0x02) || (board_ver_id == 0x03)){
-		if(is_power_on){
-			is_power_on = 0;
-		}else{
-			is_power_on = 1;
-		}
-	}
-	//Rony add end
-    if(is_power_on) {
-        printk(KERN_INFO "set usb b port power on (board gpio %d)!\n",USB_B_POW_GPIO_BIT);
-        set_gpio_mode(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, GPIO_OUTPUT_MODE);
-        set_gpio_val(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, USB_B_POW_GPIO_BIT_ON);
-    } else    {
-        printk(KERN_INFO "set usb b port power off (board gpio %d)!\n",USB_B_POW_GPIO_BIT);
-        set_gpio_mode(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, GPIO_OUTPUT_MODE);
-        set_gpio_val(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, USB_B_POW_GPIO_BIT_OFF);
-    }
-    
+{ /* Removed Wifi PowerControl. GPIOC5. ENABLE = Low */
 }
+
 //usb_a is OTG port
 static struct lm_device usb_ld_a = {
     .type = LM_DEVICE_TYPE_USB,
@@ -421,6 +397,7 @@ static struct lm_device usb_ld_a = {
     .dma_config = USB_DMA_BURST_SINGLE,
 	.set_vbus_power = set_usb_a_vbus_power,
 };
+
 static struct lm_device usb_ld_b = {
     .type = LM_DEVICE_TYPE_USB,
     .id = 1,
@@ -1498,14 +1475,6 @@ static void __init eth_pinmux_init(void)
 	meson_eth_reset();
 }
 
-char board_id[8];
-static int __init get_board_id(char* str)
-{
-	sprintf(board_id,str, sizeof(str));
-	return 0;
-}
-__setup("ID=", get_board_id);
-
 static void __init device_pinmux_init(void )
 {
     clearall_pinmux();
@@ -1523,52 +1492,6 @@ static void __init  device_clk_setting(void)
 	eth_clk_set(ETH_CLKSRC_MISC_CLK, get_misc_pll_clk(), (50 * CLK_1M), 0);
 #endif
 }
-
-#ifdef CONFIG_STV_CHECK
-extern void machine_halt(void);
-extern void machine_power_off(void);
-extern void machine_restart(char *cmd);
-extern int i2c_eeprom_read(unsigned char *buff, int addr, unsigned len);
-extern int i2c_eeprom_write(unsigned char *buff, int addr, unsigned len);
-extern int i2c_board_check_simple(void);
-void board_check(void)
-{
-	
-	/*
-	char bufr;
-	static int res = 0;		
-	printk("Board checking ... \n");
-	
-	bufr = 'G';
-	res = i2c_eeprom_write(&bufr,0,1);
-	bufr = 0;
-	mdelay(300);
-	res = i2c_eeprom_read(&bufr,0,1);
-
-	if(res>0 ){
-		printk("read ok:%c\n",bufr);
-		goto CHKOK;
-	}	else
-		goto CHKNG;
-		
-	*/
-	printk("Board checking ... \n");	
-	if(i2c_board_check_simple()==0)
-		goto CHKOK;
-	else
-		goto CHKNG;
-	
-		
-CHKNG:
-		printk("Board checking faild! system restarting ...\n");
-		machine_halt();
-		machine_power_off();
-		machine_restart("update_reboot");
-		
-CHKOK:
-		printk("Board checking OK, continue ...\n");
-}
-#endif
 
 static void disable_unused_model(void)
 {
@@ -1645,21 +1568,19 @@ static void __init LED_PWM_REG0_init(void)
 #endif
 }
 
-
 #ifdef CONFIG_AML_SUSPEND
 extern int (*pm_power_suspend)(void);
 #endif /*CONFIG_AML_SUSPEND*/
 
-// Rony add 20120611 get hardware id 
-// GPIOB23,GPIOB22,GPIOB21
-static void device_hardware_id_init(void) {	
+static void device_hardware_id_init(void) {
+	int board_ver_id = 0;
+	/* Read Hardware ID on GPIOB23,GPIOB22,GPIOB21 */ 
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<4));
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<12));
 	WRITE_CBUS_REG( PREG_PAD_GPIO1_EN_N, READ_CBUS_REG(PREG_PAD_GPIO1_EN_N) | ((1<<21)|(1<<22)|(1<<23)) ); 
 	board_ver_id = READ_CBUS_REG(PREG_PAD_GPIO1_I) >> 21;
-	printk("+++ hardware id = 0x%x +++\n",board_ver_id);
+	printk("+++ hardware id = 0x%x +++\n", board_ver_id);
 }
-// Rony add end
 
 static __init void m1_init_machine(void)
 {
@@ -1667,7 +1588,7 @@ static __init void m1_init_machine(void)
 #ifdef CONFIG_AML_SUSPEND
 	pm_power_suspend = meson_power_suspend;
 #endif /*CONFIG_AML_SUSPEND*/
-	device_hardware_id_init();// Rony add it check hardware id
+	device_hardware_id_init();
 	power_hold();
 	device_clk_setting();
 	device_pinmux_init();
