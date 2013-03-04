@@ -1006,6 +1006,7 @@ static struct platform_device ppmgr_device = {
     .resource      = ppmgr_resources,
 };
 #endif
+
 #ifdef CONFIG_FREE_SCALE
 static struct resource freescale_resources[] = {
     [0] = {
@@ -1023,67 +1024,6 @@ static struct platform_device freescale_device =
     .resource       = freescale_resources,
 };
 #endif
-#ifdef CONFIG_USB_ANDROID
-#ifdef CONFIG_USB_ANDROID_MASS_STORAGE
-static struct usb_mass_storage_platform_data mass_storage_pdata = {
-       .nluns = 2,
-       .vendor = "DEV",
-       .product = "FROYO",
-       .release = 0x0100,
-};
-static struct platform_device usb_mass_storage_device = {
-       .name = "usb_mass_storage",
-       .id = -1,
-       .dev = {
-               .platform_data = &mass_storage_pdata,
-               },
-};
-#endif
-static char *usb_functions[] = { "usb_mass_storage" };
-static char *usb_functions_adb[] = { 
-#ifdef CONFIG_USB_ANDROID_MASS_STORAGE
-"usb_mass_storage", 
-#endif
-
-#ifdef CONFIG_USB_ANDROID_ADB
-"adb" 
-#endif
-};
-
-static struct android_usb_product usb_products[] = {
-       {
-               .product_id     = 0x0c01,
-               .num_functions  = ARRAY_SIZE(usb_functions),
-               .functions      = usb_functions,
-       },
-       {
-               .product_id     = 0x0c02,
-               .num_functions  = ARRAY_SIZE(usb_functions_adb),
-               .functions      = usb_functions_adb,
-       },
-};
-
-static struct android_usb_platform_data android_usb_pdata = {
-       .vendor_id      = 0x0bb4,
-       .product_id     = 0x0c01,
-       .version        = 0x0100,
-       .product_name   = "FROYO",
-       .manufacturer_name = "DEV",
-       .num_products = ARRAY_SIZE(usb_products),
-       .products = usb_products,
-       .num_functions = ARRAY_SIZE(usb_functions_adb),
-       .functions = usb_functions_adb,
-};
-
-static struct platform_device android_usb_device = {
-       .name   = "android_usb",
-       .id             = -1,
-       .dev            = {
-               .platform_data = &android_usb_pdata,
-       },
-};
-#endif
-
 
 #if defined(CONFIG_AML_WATCHDOG)
 static struct platform_device aml_wdt_device = {
@@ -1163,7 +1103,7 @@ static struct platform_device __initdata *platform_devs[] = {
     &amlogic_spi_nor_device,
 #endif
 #ifdef CONFIG_SARADC_AM
-&saradc_device,
+    &saradc_device,
 #endif
 
 #if defined(CONFIG_ADC_KEYPADS_AM)||defined(CONFIG_ADC_KEYPADS_AM_MODULE)
@@ -1175,14 +1115,8 @@ static struct platform_device __initdata *platform_devs[] = {
 #ifdef CONFIG_AM_NAND
     &aml_nand_device,
 #endif
-#if defined(CONFIG_NAND_FLASH_DRIVER_MULTIPLANE_CE)
-    &aml_nand_device,
-#endif
 #if defined(CONFIG_AML_RTC)
     &aml_rtc_device,
-#endif
-#ifdef CONFIG_AMLOGIC_VIDEOIN_MANAGER
-	&vm_device,
 #endif
 #if defined(CONFIG_SUSPEND)
     &aml_pm_device,
@@ -1190,30 +1124,17 @@ static struct platform_device __initdata *platform_devs[] = {
 #if defined(CONFIG_ANDROID_PMEM) || defined(CONFIG_CMEM)
     &android_pmem_device,
 #endif
-#if defined(CONFIG_I2C_SW_AML)
-    &aml_sw_i2c_device_tuner,
-    &aml_sw_i2c_device,
-#endif
 #if defined(CONFIG_I2C_AML)|| defined(CONFIG_I2C_HW_AML)
     &aml_i2c_device,
-    &aml_i2c_device1,
-    &aml_i2c_device2,
 #endif
 #if defined(CONFIG_AM_UART_WITH_S_CORE)
     &aml_uart_device,
 #endif
-
 #if defined(CONFIG_AM_TV_OUTPUT)||defined(CONFIG_AM_TCON_OUTPUT)
     &vout_device,   
 #endif
 #if defined(CONFIG_AM_TV_OUTPUT2) // Rony merge 20120521
     &vout2_device,   
-#endif
-#ifdef CONFIG_USB_ANDROID
-    &android_usb_device,
-    #ifdef CONFIG_USB_ANDROID_MASS_STORAGE
-        &usb_mass_storage_device,
-    #endif
 #endif
 #ifdef CONFIG_POST_PROCESS_MANAGER
     &ppmgr_device,
@@ -1235,20 +1156,11 @@ static struct i2c_board_info __initdata aml_i2c_bus_info[] = {
 		I2C_BOARD_INFO("at88scxx",  0xB6),
 	},
 };
-static struct i2c_board_info __initdata aml_i2c_bus_info_1[] = {
-};
-
-static struct i2c_board_info __initdata aml_i2c_bus_info_2[] = {
-};
 
 static int __init aml_i2c_init(void)
 {
     i2c_register_board_info(0, aml_i2c_bus_info,
         ARRAY_SIZE(aml_i2c_bus_info));
-    i2c_register_board_info(1, aml_i2c_bus_info_1,
-        ARRAY_SIZE(aml_i2c_bus_info_1)); 
-    i2c_register_board_info(2, aml_i2c_bus_info_2,
-        ARRAY_SIZE(aml_i2c_bus_info_2)); 
 	return 0;
 }
 
