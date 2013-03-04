@@ -381,7 +381,21 @@ static void set_usb_a_vbus_power(char is_power_on)
 }
 
 static void set_usb_b_vbus_power(char is_power_on)
-{ /* Removed Wifi PowerControl. GPIOC5. ENABLE = Low */
+{ 
+#define USB_B_POW_GPIO         GPIOC_bank_bit0_15(5)
+#define USB_B_POW_GPIO_BIT     GPIOC_bit_bit0_15(5)
+#define USB_B_POW_GPIO_BIT_ON   0
+#define USB_B_POW_GPIO_BIT_OFF  1
+    /* USB +3v3 Power Enable internal port, GPIO C5, ACTIVE LOW */
+    if(is_power_on) {
+        printk(KERN_INFO "set usb b port power on (board gpio %d)!\n", USB_B_POW_GPIO_BIT);
+        set_gpio_mode(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, GPIO_OUTPUT_MODE);
+        set_gpio_val(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, USB_B_POW_GPIO_BIT_ON);
+    } else    {
+        printk(KERN_INFO "set usb b port power off (board gpio %d)!\n",USB_B_POW_GPIO_BIT);
+        set_gpio_mode(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, GPIO_OUTPUT_MODE);
+        set_gpio_val(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, USB_B_POW_GPIO_BIT_OFF);
+    }
 }
 
 //usb_a is OTG port
