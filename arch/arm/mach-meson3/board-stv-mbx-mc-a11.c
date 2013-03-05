@@ -1263,6 +1263,10 @@ static __init void m1_init_machine(void)
 	pm_power_suspend = meson_power_suspend;
 #endif /*CONFIG_AML_SUSPEND*/
 	device_hardware_id_init();
+
+	/* vDorst: Debug PWM_C reg */
+	print_pwmc_reg();
+
 	power_hold();
 	device_clk_setting();
 	device_pinmux_init();
