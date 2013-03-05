@@ -761,45 +761,6 @@ static struct platform_device aml_sw_i2c_device = {
 };
 #endif
 
-
-#if defined(CONFIG_I2C_AML) || defined(CONFIG_I2C_HW_AML)
-static struct aml_i2c_platform aml_i2c_plat = {
-    .wait_count     = 50000,
-    .wait_ack_interval  = 5,
-    .wait_read_interval = 5,
-    .wait_xfer_interval = 5,
-//    .master_no      = 0,
-    .use_pio            = 0,
-    .master_i2c_speed   = AML_I2C_SPPED_100K,
-
-    .master_pinmux = {
-        .scl_reg    = MESON_I2C_MASTER_GPIOX_26_REG,
-        .scl_bit    = MESON_I2C_MASTER_GPIOX_26_BIT,
-        .sda_reg    = MESON_I2C_MASTER_GPIOX_25_REG,
-        .sda_bit    = MESON_I2C_MASTER_GPIOX_25_BIT,
-    }
-};
-
-static struct resource aml_i2c_resource[] = {
-	[0]= {
-		.start =    MESON_I2C_MASTER_A_START,
-		.end   =    MESON_I2C_MASTER_A_END,
-		.flags =    IORESOURCE_MEM,
-	}
-};
-
-static struct platform_device aml_i2c_device = {
-    .name         = "aml-i2c",
-    .id       = 0,
-    .num_resources    = ARRAY_SIZE(aml_i2c_resource),
-    .resource     = aml_i2c_resource,
-    .dev = {
-        .platform_data = &aml_i2c_plat,
-    },
-};
-
-#endif
-
 #if defined(CONFIG_AM_UART_WITH_S_CORE)
 static struct aml_uart_platform aml_uart_plat = {
     .uart_line[0]       =   UART_AO,
@@ -1157,9 +1118,6 @@ static struct platform_device __initdata *platform_devs[] = {
 #endif
 #if defined(CONFIG_I2C_SW_AML)
     &aml_sw_i2c_device,
-#endif
-#if defined(CONFIG_I2C_AML)|| defined(CONFIG_I2C_HW_AML)
-    &aml_i2c_device,
 #endif
 #if defined(CONFIG_AM_UART_WITH_S_CORE)
     &aml_uart_device,
