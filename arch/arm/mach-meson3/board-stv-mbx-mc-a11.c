@@ -132,15 +132,15 @@ static struct platform_device jpeglogo_device = {
 static struct resource intput_resources[] = {
     {
         .start = 0x0,
-        .end = 0x0,
-        .name="8726M3",
+        .end   = 0x0,
+        .name  = "8726M3",
         .flags = IORESOURCE_IO,
     },
 };
 
 static struct platform_device input_device = {
     .name = "m1-kp",
-    .id = 0,
+    .id   = 0,
     .num_resources = ARRAY_SIZE(intput_resources),
     .resource = intput_resources,
 };
@@ -194,6 +194,7 @@ static inline int key_input_init_func(void)
 	set_gpio_mode(GPIOAO_bank_bit0_11(3), GPIOAO_bit_bit0_11(3), GPIO_INPUT_MODE);
 	return 0;
 }
+
 static inline int key_scan(int *key_state_list)
 {
 	int ret = 0;
@@ -1096,7 +1097,7 @@ static struct platform_device __initdata *platform_devs[] = {
 #if defined(CONFIG_AM_UART_WITH_S_CORE)
 	&aml_uart_device,
 #endif
-#if defined(CONFIG_AM_TV_OUTPUT)||defined(CONFIG_AM_TCON_OUTPUT)
+#if defined(CONFIG_AM_TV_OUTPUT) || defined(CONFIG_AM_TCON_OUTPUT)
 	&vout_device,
 #endif
 #if defined(CONFIG_AM_TV_OUTPUT2)
@@ -1124,8 +1125,8 @@ static struct i2c_board_info __initdata aml_i2c_bus_info[] = {
 
 static int __init aml_i2c_init(void)
 {
-    i2c_register_board_info(0, aml_i2c_bus_info,
-        ARRAY_SIZE(aml_i2c_bus_info));
+	i2c_register_board_info(0, aml_i2c_bus_info,
+	ARRAY_SIZE(aml_i2c_bus_info));
 	return 0;
 }
 
