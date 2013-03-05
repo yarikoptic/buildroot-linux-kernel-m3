@@ -683,12 +683,8 @@ static void set_gpio_suspend_resume(int power_on)
 		hdmi_wr_reg(0x8005, 2); 
 		udelay(50);
 		hdmi_wr_reg(0x8005, 1); 
-		// LED
-		WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0xff00<<0));
 	} else {
 		printk("set gpio suspend.\n");
-		// LED
-		WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0<<0));
 	}
 }
 
@@ -1236,7 +1232,6 @@ static __init void m1_init_machine(void)
 	power_hold();
 	device_clk_setting();
 	device_pinmux_init();
-	LED_PWM_REG0_init();
 	platform_add_devices(platform_devs, ARRAY_SIZE(platform_devs));
 
 #ifdef CONFIG_USB_DWC_OTG_HCD
