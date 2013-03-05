@@ -731,6 +731,37 @@ static struct platform_device aml_pm_device = {
 };
 #endif
 
+#if defined(CONFIG_I2C_SW_AML)
+
+#define MESON3_I2C_PREG_GPIOX_OE CBUS_REG_ADDR(PREG_PAD_GPIO4_EN_N)
+#define MESON3_I2C_PREG_GPIOX_OUTLVL CBUS_REG_ADDR(PREG_PAD_GPIO4_O)
+#define MESON3_I2C_PREG_GPIOX_INLVL CBUS_REG_ADDR(PREG_PAD_GPIO4_I)
+
+static struct aml_sw_i2c_platform aml_sw_i2c_plat = {
+    .sw_pins = {
+        .scl_reg_out = MESON3_I2C_PREG_GPIOX_OUTLVL,
+        .scl_reg_in = MESON3_I2C_PREG_GPIOX_INLVL,
+        .scl_bit = 26,
+        .scl_oe = MESON3_I2C_PREG_GPIOX_OE,
+        .sda_reg_out = MESON3_I2C_PREG_GPIOX_OUTLVL,
+        .sda_reg_in = MESON3_I2C_PREG_GPIOX_INLVL,
+        .sda_bit = 25,
+        .sda_oe = MESON3_I2C_PREG_GPIOX_OE,
+    },
+    .udelay = 2,
+    .timeout = 100,
+};
+
+static struct platform_device aml_sw_i2c_device = {
+    .name = "aml-sw-i2c",
+    .id = 1,
+    .dev = {
+        .platform_data = &aml_sw_i2c_plat,
+    },
+};
+#endif
+
+
 #if defined(CONFIG_I2C_AML) || defined(CONFIG_I2C_HW_AML)
 static struct aml_i2c_platform aml_i2c_plat = {
     .wait_count     = 50000,
@@ -1124,6 +1155,9 @@ static struct platform_device __initdata *platform_devs[] = {
 #if defined(CONFIG_ANDROID_PMEM) || defined(CONFIG_CMEM)
     &android_pmem_device,
 #endif
+#if defined(CONFIG_I2C_SW_AML)
+    &aml_sw_i2c_device,
+#endif
 #if defined(CONFIG_I2C_AML)|| defined(CONFIG_I2C_HW_AML)
     &aml_i2c_device,
 #endif
@@ -1131,23 +1165,23 @@ static struct platform_device __initdata *platform_devs[] = {
     &aml_uart_device,
 #endif
 #if defined(CONFIG_AM_TV_OUTPUT)||defined(CONFIG_AM_TCON_OUTPUT)
-    &vout_device,   
+    &vout_device,
 #endif
-#if defined(CONFIG_AM_TV_OUTPUT2) // Rony merge 20120521
+#if defined(CONFIG_AM_TV_OUTPUT2)
     &vout2_device,   
 #endif
 #ifdef CONFIG_POST_PROCESS_MANAGER
     &ppmgr_device,
 #endif
 #ifdef CONFIG_FREE_SCALE
-        &freescale_device,
-#endif   
+    &freescale_device,
+#endif
 
 #ifdef CONFIG_EFUSE
 	&aml_efuse_device,
 #endif
 #if defined(CONFIG_AML_WATCHDOG)
-        &aml_wdt_device,
+	&aml_wdt_device,
 #endif
 };
 
@@ -1257,7 +1291,6 @@ static void __init LED_PWM_REG0_init(void)
 	/* vDorst: This code is uses for making an adjustable core voltage. 
 	    I don't think that we use that. 
 	*/ 
-	printl
 	printk(KERN_INFO "LED_PWM_REG0_init.\n");
 	SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_2,(1<<2));
 	WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0xff00<<0));
