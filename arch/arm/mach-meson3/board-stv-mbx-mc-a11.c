@@ -1240,12 +1240,24 @@ static void __init power_hold(void)
         set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
 }
 
+static void print_pwmc_reg(void)
+{
+	/* vDorst: Try to detect is PWM_C is set by the bootloader. */
+	printk("### Print PWMC Reg ###\n");
+	printk("PERIPHS_PIN_MUX_2:              %x\n", PERIPHS_PIN_MUX_2);
+	printk("READ_CBUS_REG(PWM_PWM_C):       %x\n", READ_CBUS_REG(PWM_PWM_C));
+	printk("READ_CBUS_REG(PWM_MISC_REG_CD): %x\n", READ_CBUS_REG(PWM_MISC_REG_CD));
+}
+
 static void __init LED_PWM_REG0_init(void)
 {
+	/* vDorst: Debug PWM_C reg */
+	print_pwmc_reg();
 	// PWM_C
 	/* vDorst: This code is uses for making an adjustable core voltage. 
 	    I don't think that we use that. 
 	*/ 
+	printl
 	printk(KERN_INFO "LED_PWM_REG0_init.\n");
 	SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_2,(1<<2));
 	WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0xff00<<0));
@@ -1254,6 +1266,8 @@ static void __init LED_PWM_REG0_init(void)
 					|(0x7f<<8)	// PWM_A_CLK_DIV
 					|(1<<15)	// PWM_A_CLK_EN
 	);
+	/* vDorst: Debug PWM_C reg */
+	print_pwmc_reg();
 }
 
 #ifdef CONFIG_AML_SUSPEND
