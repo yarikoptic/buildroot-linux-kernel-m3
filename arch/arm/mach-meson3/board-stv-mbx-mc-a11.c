@@ -82,7 +82,6 @@
 
 #if defined(CONFIG_AML_HDMI_TX)
 static struct hdmi_phy_set_data brd_phy_data[] = {
-	// {27, 0xf7, 0x0},    // an example: set Reg0xf7 to 0 in 27MHz
 	{-1,   -1},         //end of phy setting
 };
 
@@ -144,7 +143,6 @@ static struct platform_device input_device = {
     .id = 0,
     .num_resources = ARRAY_SIZE(intput_resources),
     .resource = intput_resources,
-    
 };
 #endif
 
@@ -164,22 +162,13 @@ static struct platform_device saradc_device = {
 #include <linux/adc_keypad.h>
 #include <linux/saradc.h>
 
-static struct adc_key adc_kp_key[] = {   
-    {KEY_PLAYCD, "recovery", CHAN_4, 0,  60},
-    /*
-    {KEY_F1,		"menu",  	CHAN_4, 0, 	60},
-    {KEY_ESC,		"exit",  	CHAN_4, 124, 60},
-    {KEY_ENTER,		"enter",    CHAN_4, 247, 60},
-    {KEY_UP,		"up",  		CHAN_4, 371, 60},
-    {KEY_LEFT,		"left", 	CHAN_4, 495, 60},
-    {KEY_DOWN,		"down", 	CHAN_4, 619, 60},
-    {KEY_RIGHT,		"right",    CHAN_4, 745, 60},
-    */
+static struct adc_key adc_kp_key[] = {
+	{KEY_PLAYCD, "recovery", CHAN_4, 0,  60},
 };
 
 static struct adc_kp_platform_data adc_kp_pdata = {
-    .key = &adc_kp_key[0],
-    .key_num = ARRAY_SIZE(adc_kp_key),
+	.key = &adc_kp_key[0],
+	.key_num = ARRAY_SIZE(adc_kp_key),
 };
 
 static struct platform_device adc_kp_device = {
@@ -201,10 +190,8 @@ int _key_code_list[] = {KEY_POWER};
 
 static inline int key_input_init_func(void)
 {
-	// GPIO AO3
+	// Power Button, GPIO AO3, ACTIVE LOW
 	set_gpio_mode(GPIOAO_bank_bit0_11(3), GPIOAO_bit_bit0_11(3), GPIO_INPUT_MODE);
-	//    WRITE_AOBUS_REG(AO_RTC_ADDR0, (READ_AOBUS_REG(AO_RTC_ADDR0) &~(1<<11)));
-	//    WRITE_AOBUS_REG(AO_RTC_ADDR1, (READ_AOBUS_REG(AO_RTC_ADDR1) &~(1<<3)));
 	return 0;
 }
 static inline int key_scan(int *key_state_list)
@@ -221,7 +208,6 @@ static inline int key_scan(int *key_state_list)
 	else
 #endif
 	key_state_list[0] = get_gpio_val(GPIOAO_bank_bit0_11(3), GPIOAO_bit_bit0_11(3))?0:1;
-	// key_state_list[0] = ((READ_AOBUS_REG(AO_RTC_ADDR1) >> 2) & 1) ? 0 : 1;
 	return ret;
 }
 
@@ -252,28 +238,27 @@ static struct platform_device input_device_key = {
 static int ir_init()
 {
     unsigned int control_value;
-    
+
     //mask--mux gpioao_7 to remote
     SET_AOBUS_REG_MASK(AO_RTI_PIN_MUX_REG,1<<0);
-    
+
     //max frame time is 80ms, base rate is 20us
     control_value = 3<<28|(0x9c40 << 12)|0x13;
     WRITE_AOBUS_REG(AO_IR_DEC_REG0, control_value);
-     
+
     /*[3-2]rising or falling edge detected
       [8-7]Measure mode
     */
     control_value = 0x8574;
     WRITE_AOBUS_REG(AO_IR_DEC_REG1, control_value);
-    
     return 0;
 }
 
 static int pwm_init()
 {
-    CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7, (1<<16));
+	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7, (1<<16));
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0, (1<<29));
-    SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<26));
+	SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<26));
 }
 
 static struct irreceiver_platform_data irreceiver_data = {
@@ -322,15 +307,15 @@ static struct platform_device fb_device = {
 static struct mtd_partition spi_partition_info[] = {
 #ifdef CONFIG_STV_RECOVERY
 	{
-    .name = "spi",
-    .offset = 0,
-    .size = 0x3fe000,
+		.name = "spi",
+		.offset = 0,
+		.size = 0x3fe000,
 	},
-  {
-    .name = "uboot",
-    .offset = 0,
-    .size = 0x4e000,
-  },
+	{
+		.name = "uboot",
+		.offset = 0,
+		.size = 0x4e000,
+	},
 #endif
 	{
 		.name = "ubootenv",
@@ -338,22 +323,22 @@ static struct mtd_partition spi_partition_info[] = {
 		.size = 0x2000,
 	},
 #ifdef CONFIG_STV_RECOVERY
-  {
-    .name = "recovery",
-    .offset = 0x50000,
-    .size = 0x3ae000,
-  },
+	{
+		.name = "recovery",
+		.offset = 0x50000,
+		.size = 0x3ae000,
+	},
 #endif
-  {
-    .name = "ids",
-    .offset = 0x3fe000,
-    .size = 0x2000,
-  },
+	{
+		.name = "ids",
+		.offset = 0x3fe000,
+		.size = 0x2000,
+	},
 };
 
 static struct flash_platform_data amlogic_spi_platform = {
-    .parts = spi_partition_info,
-    .nr_parts = ARRAY_SIZE(spi_partition_info),
+	.parts = spi_partition_info,
+	.nr_parts = ARRAY_SIZE(spi_partition_info),
 };
 
 static struct resource amlogic_spi_nor_resources[] = {
@@ -380,8 +365,7 @@ static void set_usb_a_vbus_power(char is_power_on)
 {
 }
 
-static void set_usb_b_vbus_power(char is_power_on)
-{ 
+static void set_usb_b_vbus_power(char is_power_on) {
 #define USB_B_POW_GPIO         GPIOC_bank_bit0_15(5)
 #define USB_B_POW_GPIO_BIT     GPIOC_bit_bit0_15(5)
 #define USB_B_POW_GPIO_BIT_ON   0
@@ -429,40 +413,40 @@ static struct lm_device usb_ld_b = {
 
 #if defined(CONFIG_AM_STREAMING)
 static struct resource codec_resources[] = {
-    [0] = {
-        .start =  CODEC_ADDR_START,
-        .end   = CODEC_ADDR_END,
-        .flags = IORESOURCE_MEM,
-    },
-    [1] = {
-        .start = STREAMBUF_ADDR_START,
-	 .end = STREAMBUF_ADDR_END,
-	 .flags = IORESOURCE_MEM,
-    },
+	[0] = {
+		.start = CODEC_ADDR_START,
+		.end   = CODEC_ADDR_END,
+		.flags = IORESOURCE_MEM,
+	},
+	[1] = {
+		.start = STREAMBUF_ADDR_START,
+		.end   = STREAMBUF_ADDR_END,
+		.flags = IORESOURCE_MEM,
+	},
 };
 
 static struct platform_device codec_device = {
-    .name       = "amstream",
-    .id         = 0,
-    .num_resources = ARRAY_SIZE(codec_resources),
-    .resource      = codec_resources,
+	.name          = "amstream",
+	.id            = 0,
+	.num_resources = ARRAY_SIZE(codec_resources),
+	.resource      = codec_resources,
 };
 #endif
 
 #if defined(CONFIG_AM_VIDEO)
 static struct resource deinterlace_resources[] = {
-    [0] = {
-        .start =  DI_ADDR_START,
-        .end   = DI_ADDR_END,
-        .flags = IORESOURCE_MEM,
-    },
+	[0] = {
+		.start = DI_ADDR_START,
+		.end   = DI_ADDR_END,
+		.flags = IORESOURCE_MEM,
+	},
 };
 
 static struct platform_device deinterlace_device = {
-    .name       = "deinterlace",
-    .id         = 0,
-    .num_resources = ARRAY_SIZE(deinterlace_resources),
-    .resource      = deinterlace_resources,
+	.name          = "deinterlace",
+	.id            = 0,
+	.num_resources = ARRAY_SIZE(deinterlace_resources),
+	.resource      = deinterlace_resources,
 };
 #endif
 
@@ -524,8 +508,8 @@ static struct resource audiodsp_resources[] = {
 };
 
 static struct platform_device audiodsp_device = {
-    .name       = "audiodsp",
-    .id         = 0,
+    .name          = "audiodsp",
+    .id            = 0,
     .num_resources = ARRAY_SIZE(audiodsp_resources),
     .resource      = audiodsp_resources,
 };
@@ -641,9 +625,7 @@ typedef struct {
 	unsigned enable;
 } pinmux_data_t;
 
-
 #define MAX_PINMUX	1
-
 pinmux_data_t pinmux_data[MAX_PINMUX] = {
 	{"HDMI", 0, (1<<2)|(1<<1)|(1<<0), 1},
 };
@@ -683,7 +665,7 @@ static void set_vccx2(int power_on)
 #endif
 		/* vDorst: Idea to try to enable vccio and vcck here. */
 	} else {
-		printk(KERN_INFO "set_vcc power down\n");       			
+		printk(KERN_INFO "set_vcc power down\n");
 		save_pinmux();
 		for (i=0;i<MAX_GPIO;i++)
 			save_gpio(i);
@@ -770,26 +752,27 @@ static struct aml_uart_platform aml_uart_plat = {
 };
 
 static struct platform_device aml_uart_device = {
-    .name         = "am_uart",  
-    .id       = -1, 
-    .num_resources    = 0,  
-    .resource     = NULL,   
-    .dev = {        
-                .platform_data = &aml_uart_plat,
-           },
+	.name          = "am_uart",
+	.id            = -1,
+	.num_resources = 0,
+	.resource      = NULL,
+	.dev = {
+		.platform_data = &aml_uart_plat,
+	},
 };
 #endif
 
 
 #ifdef CONFIG_EFUSE
 static bool efuse_data_verify(unsigned char *usid)
-{  int len;
-  
-    len = strlen(usid);
-    if((len > 8)&&(len<31) )
-        return true;
-		else
-				return false;
+{
+	int len;
+
+	len = strlen(usid);
+	if ( (len > 8) && (len<31) )
+		return true;
+	else
+		return false;
 }
 
 static struct efuse_platform_data aml_efuse_plat = {
@@ -799,11 +782,11 @@ static struct efuse_platform_data aml_efuse_plat = {
 };
 
 static struct platform_device aml_efuse_device = {
-    .name	= "efuse",
-    .id	= -1,
-    .dev = {
-                .platform_data = &aml_efuse_plat,
-           },
+	.name = "efuse",
+	.id   = -1,
+	.dev  = {
+		.platform_data = &aml_efuse_plat,
+	},
 };
 #endif
 
@@ -986,7 +969,7 @@ static struct platform_device vout2_device = {
  #ifdef CONFIG_POST_PROCESS_MANAGER
 static struct resource ppmgr_resources[] = {
     [0] = {
-        .start =  PPMGR_ADDR_START,
+        .start = PPMGR_ADDR_START,
         .end   = PPMGR_ADDR_END,
         .flags = IORESOURCE_MEM,
     },
@@ -1059,82 +1042,80 @@ struct platform_device meson_device_eth = {
 
 static struct platform_device __initdata *platform_devs[] = {
 #if defined(ETH_PM_DEV)
-    &meson_device_eth,
+	&meson_device_eth,
 #endif
 #if defined(CONFIG_JPEGLOGO)
-    &jpeglogo_device,
+	&jpeglogo_device,
 #endif
 #if defined(CONFIG_AML_HDMI_TX)
-    &aml_hdmi_device,
+	&aml_hdmi_device,
 #endif
 #if defined(CONFIG_FB_AM)
-    &fb_device,
+	&fb_device,
 #endif
 #if defined(CONFIG_AM_STREAMING)
-    &codec_device,
+	&codec_device,
 #endif
 #if defined(CONFIG_AM_VIDEO)
-    &deinterlace_device,
+	&deinterlace_device,
 #endif
 #if defined(CONFIG_TVIN_VDIN)
-    &vdin_device,
+	&vdin_device,
 #endif
 #if defined(CONFIG_AML_AUDIO_DSP)
-    &audiodsp_device,
+	&audiodsp_device,
 #endif
 #if defined(CONFIG_SND_AML_M3)
-    &aml_audio,
+	&aml_audio,
 #endif
 #if defined(CONFIG_CARDREADER)
-    &amlogic_card_device,
+	&amlogic_card_device,
 #endif
 #if defined(CONFIG_KEYPADS_AM)||defined(CONFIG_VIRTUAL_REMOTE)||defined(CONFIG_KEYPADS_AM_MODULE)
-    &input_device,
+	&input_device,
 #endif
 #if defined(CONFIG_AMLOGIC_SPI_NOR)
-    &amlogic_spi_nor_device,
+	&amlogic_spi_nor_device,
 #endif
 #ifdef CONFIG_SARADC_AM
-    &saradc_device,
+	&saradc_device,
 #endif
-
 #if defined(CONFIG_ADC_KEYPADS_AM)||defined(CONFIG_ADC_KEYPADS_AM_MODULE)
-    &adc_kp_device,
+	&adc_kp_device,
 #endif
 #if defined(CONFIG_KEY_INPUT_CUSTOM_AM) || defined(CONFIG_KEY_INPUT_CUSTOM_AM_MODULE)
-    &input_device_key,  //changed by Elvis
+	&input_device_key,
 #endif
 #ifdef CONFIG_AM_NAND
-    &aml_nand_device,
+	&aml_nand_device,
 #endif
 #if defined(CONFIG_AML_RTC)
-    &aml_rtc_device,
+	&aml_rtc_device,
 #endif
 #if defined(CONFIG_SUSPEND)
-    &aml_pm_device,
+	&aml_pm_device,
 #endif
 #if defined(CONFIG_ANDROID_PMEM) || defined(CONFIG_CMEM)
-    &android_pmem_device,
+	&android_pmem_device,
 #endif
 #if defined(CONFIG_I2C_SW_AML)
-    &aml_sw_i2c_device,
+	&aml_sw_i2c_device,
 #endif
 #if defined(CONFIG_AM_UART_WITH_S_CORE)
-    &aml_uart_device,
+	&aml_uart_device,
 #endif
 #if defined(CONFIG_AM_TV_OUTPUT)||defined(CONFIG_AM_TCON_OUTPUT)
-    &vout_device,
+	&vout_device,
 #endif
 #if defined(CONFIG_AM_TV_OUTPUT2)
-    &vout2_device,   
+	&vout2_device,
 #endif
 #ifdef CONFIG_POST_PROCESS_MANAGER
-    &ppmgr_device,
+	&ppmgr_device,
 #endif
 #ifdef CONFIG_FREE_SCALE
-    &freescale_device,
+	&freescale_device,
 #endif
-
 #ifdef CONFIG_EFUSE
 	&aml_efuse_device,
 #endif
@@ -1205,13 +1186,13 @@ static void __init  device_clk_setting(void)
 
 static void disable_unused_model(void)
 {
-    CLK_GATE_OFF(VIDEO_IN);
-    CLK_GATE_OFF(BT656_IN);
-  //  CLK_GATE_OFF(ETHERNET);
-//    CLK_GATE_OFF(SATA);
-//    CLK_GATE_OFF(WIFI);
-    video_dac_disable();
- }
+	CLK_GATE_OFF(VIDEO_IN);
+	CLK_GATE_OFF(BT656_IN);
+	// CLK_GATE_OFF(ETHERNET);
+	// CLK_GATE_OFF(SATA);
+	// CLK_GATE_OFF(WIFI);
+	video_dac_disable();
+}
 
 static void __init power_hold(void)
 {
