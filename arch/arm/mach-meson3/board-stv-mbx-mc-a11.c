@@ -1191,10 +1191,6 @@ static void __init power_hold(void)
         set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
 }
 
-#ifdef CONFIG_AML_SUSPEND
-extern int (*pm_power_suspend)(void);
-#endif /*CONFIG_AML_SUSPEND*/
-
 static void device_hardware_id_init(void) {
 	int board_ver_id = 0;
 	/* Read Hardware ID on GPIOB23,GPIOB22,GPIOB21 */ 
@@ -1204,6 +1200,10 @@ static void device_hardware_id_init(void) {
 	board_ver_id = READ_CBUS_REG(PREG_PAD_GPIO1_I) >> 21;
 	printk("+++ hardware id = 0x%x +++\n", board_ver_id);
 }
+
+#ifdef CONFIG_AML_SUSPEND
+extern int (*pm_power_suspend)(void);
+#endif /*CONFIG_AML_SUSPEND*/
 
 static __init void m1_init_machine(void)
 {
