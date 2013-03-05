@@ -684,11 +684,11 @@ static void set_gpio_suspend_resume(int power_on)
 		udelay(50);
 		hdmi_wr_reg(0x8005, 1); 
 		// LED
-		// WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0xff00<<0));
+		WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0xff00<<0));
 	} else {
 		printk("set gpio suspend.\n");
 		// LED
-		// WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0<<0));
+		WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0<<0));
 	}
 }
 
@@ -761,7 +761,6 @@ static struct platform_device aml_uart_device = {
 	},
 };
 #endif
-
 
 #ifdef CONFIG_EFUSE
 static bool efuse_data_verify(unsigned char *usid)
@@ -1213,35 +1212,6 @@ static void __init power_hold(void)
         set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
 }
 
-static void print_pwmc_reg(void)
-{
-	/* vDorst: Try to detect is PWM_C is set by the bootloader. */
-	printk("### Print PWMC Reg ###\n");
-	printk("PERIPHS_PIN_MUX_2:              %x\n", PERIPHS_PIN_MUX_2);
-	printk("READ_CBUS_REG(PWM_PWM_C):       %x\n", READ_CBUS_REG(PWM_PWM_C));
-	printk("READ_CBUS_REG(PWM_MISC_REG_CD): %x\n", READ_CBUS_REG(PWM_MISC_REG_CD));
-}
-
-static void __init LED_PWM_REG0_init(void)
-{
-	/* vDorst: Debug PWM_C reg */
-	print_pwmc_reg();
-	// PWM_C
-	/* vDorst: This code is uses for making an adjustable core voltage. 
-	    I don't think that we use that. 
-	*/ 
-	printk(KERN_INFO "LED_PWM_REG0_init.\n");
-	SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_2,(1<<2));
-	WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) | (0xff00<<0));
-	WRITE_CBUS_REG(PWM_MISC_REG_CD, (1<<0)	// enable
-					|(0<<4)	// PWM_A_CLK_SEL: 0:XTAL;  1:ddr_pll_clk;  2:clk81;  3:sys_pll_clk;
-					|(0x7f<<8)	// PWM_A_CLK_DIV
-					|(1<<15)	// PWM_A_CLK_EN
-	);
-	/* vDorst: Debug PWM_C reg */
-	print_pwmc_reg();
-}
-
 #ifdef CONFIG_AML_SUSPEND
 extern int (*pm_power_suspend)(void);
 #endif /*CONFIG_AML_SUSPEND*/
@@ -1263,10 +1233,6 @@ static __init void m1_init_machine(void)
 	pm_power_suspend = meson_power_suspend;
 #endif /*CONFIG_AML_SUSPEND*/
 	device_hardware_id_init();
-
-	/* vDorst: Debug PWM_C reg */
-	print_pwmc_reg();
-
 	power_hold();
 	device_clk_setting();
 	device_pinmux_init();
