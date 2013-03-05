@@ -1130,20 +1130,11 @@ static int __init aml_i2c_init(void)
 	return 0;
 }
 
-#define NET_EXT_CLK 1
 static void __init eth_pinmux_init(void)
 {
-	printk("eth_pinmux_init");
-
+	/* Setup Ethernet and Pinmux */
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_6,(3<<17));//reg6[17/18]=0
-#ifdef NET_EXT_CLK
-	printk("eth_pinmux: use external clk.");
 	eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_IN_GPIOY0_REG6_18, 0);
-#else
-	printk("eth_pinmux: use internal clk.");
-	eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_OUT_GPIOY0_REG6_17, 0);
-#endif
-	printk("eth_pinmux: setup .");
 	CLEAR_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);           // Disable the Ethernet clocks
 	// ---------------------------------------------
 	// Test 50Mhz Input Divide by 2
@@ -1154,7 +1145,6 @@ static void __init eth_pinmux_init(void)
 	SET_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, (1 << 1));     // divide by 2 for 100M
 	SET_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);            // enable Ethernet clocks
 	udelay(100);
-
 	/* Reset Ethernet */
 	meson_eth_reset();
 }
@@ -1162,7 +1152,6 @@ static void __init eth_pinmux_init(void)
 static void __init device_pinmux_init(void )
 {
     clearall_pinmux();
-    /*pinmux of eth*/
     eth_pinmux_init();
     aml_i2c_init();
 }
@@ -1170,11 +1159,7 @@ static void __init device_pinmux_init(void )
 static void __init  device_clk_setting(void)
 {
 	/*eth clk*/
-#ifdef NET_EXT_CLK
 	eth_clk_set(ETH_CLKSRC_EXT_XTAL_CLK, (50 * CLK_1M), (50 * CLK_1M), 1);
-#else
-	eth_clk_set(ETH_CLKSRC_MISC_CLK, get_misc_pll_clk(), (50 * CLK_1M), 0);
-#endif
 }
 
 static void disable_unused_model(void)
