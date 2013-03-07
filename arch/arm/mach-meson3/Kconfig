@@ -193,6 +193,7 @@ config MACH_MESON3_STV_MBX_MC
 
 config MACH_MESON3_STV_MBX_MC_A11
         select GENERIC_ALLOCATOR
+	select GENERIC_GPIO
         bool "Support M3 (MyGica A11) platform"
         help
                 Include support for the AML M3 MyGica A11 board platform.
