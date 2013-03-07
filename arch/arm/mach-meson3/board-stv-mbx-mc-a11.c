@@ -86,7 +86,7 @@ static struct gpio_led aml_led_pins[] = {
 	{
 		.name		 = "PowerLed",
 		.default_trigger = "default-on",
-		.gpio		 = (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bank_bit0_11(10), // GPIOAO10
+		.gpio		 = (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10), // GPIOAO10
 		.active_low	 = 1,
 	},
 };
