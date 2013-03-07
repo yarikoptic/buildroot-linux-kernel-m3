@@ -80,6 +80,31 @@
 #include <linux/hdmi/hdmi_config.h>
 #endif
 
+#if defined(CONFIG_LEDS_CLASS)
+/* LED Class Support for PowerLed */
+static struct gpio_led aml_led_pins[] = {
+	{
+		.name		 = "PowerLed",
+		.default_trigger = "default-on",
+		.gpio		 = (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bank_bit0_11(10), // GPIOAO10
+		.active_low	 = 1,
+	},
+};
+
+static struct gpio_led_platform_data aml_led_data = {
+	.leds	  = aml_led_pins,
+	.num_leds = ARRAY_SIZE(aml_led_pins),
+};
+
+static struct platform_device aml_leds = {
+	.name	= "leds-gpio",
+	.id	= -1,
+	.dev	= {
+		.platform_data	= &aml_led_data,
+	}
+};
+#endif
+
 #if defined(CONFIG_AML_HDMI_TX)
 static struct hdmi_phy_set_data brd_phy_data[] = {
 	{-1,   -1},         //end of phy setting
@@ -1037,6 +1062,9 @@ struct platform_device meson_device_eth = {
 #endif
 
 static struct platform_device __initdata *platform_devs[] = {
+#if defined(CONFIG_LEDS_CLASS)
+	&aml_leds,
+#endif
 #if defined(ETH_PM_DEV)
 	&meson_device_eth,
 #endif
