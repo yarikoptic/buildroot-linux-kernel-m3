@@ -80,11 +80,11 @@
 #include <linux/hdmi/hdmi_config.h>
 #endif
 
-#if defined(CONFIG_LEDS_CLASS)
+#if defined(CONFIG_LEDS_GPIO)
 /* LED Class Support for PowerLed */
 static struct gpio_led aml_led_pins[] = {
 	{
-		.name		 = "PowerLed",
+		.name		 = "Powerled",
 		.default_trigger = "default-on",
 		.gpio		 = (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10), // GPIOAO10
 		.active_low	 = 1,
@@ -1035,12 +1035,12 @@ static struct platform_device aml_wdt_device = {
 #define ETH_MODE_RMII_EXTERNAL
 static void meson_eth_clock_enable(int flag)
 {
-    printk("meson_eth_clock_enable: %x", (unsigned int)flag );
+    printk("meson_eth_clock_enable: %x\n", (unsigned int)flag );
 }
 
 static void meson_eth_reset(void)
 {
-    printk("meson_eth_reset");
+    printk("meson_eth_reset\n");
     set_gpio_mode(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), GPIO_OUTPUT_MODE);
     set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 0);
     mdelay(100);
@@ -1062,7 +1062,7 @@ struct platform_device meson_device_eth = {
 #endif
 
 static struct platform_device __initdata *platform_devs[] = {
-#if defined(CONFIG_LEDS_CLASS)
+#if defined(CONFIG_LEDS_GPIO)
 	&aml_leds,
 #endif
 #if defined(ETH_PM_DEV)
@@ -1233,6 +1233,8 @@ static void device_hardware_id_init(void) {
 extern int (*pm_power_suspend)(void);
 #endif /*CONFIG_AML_SUSPEND*/
 
+#define GPIO_LED_POWER (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10)
+
 static __init void m1_init_machine(void)
 {
 	meson_cache_init();
@@ -1243,6 +1245,9 @@ static __init void m1_init_machine(void)
 	power_hold();
 	device_clk_setting();
 	device_pinmux_init();
+	printk("Set GPIO PowerLed.\n");
+	gpio_direction_output(GPIO_LED_POWER, 0);
+	printk("Add Platform Devices.\n");
 	platform_add_devices(platform_devs, ARRAY_SIZE(platform_devs));
 
 #ifdef CONFIG_USB_DWC_OTG_HCD
