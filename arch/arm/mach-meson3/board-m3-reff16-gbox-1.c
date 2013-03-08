@@ -2269,9 +2269,6 @@ static struct platform_device __initdata *platform_devs[] = {
 #if defined(CONFIG_AM_VIDEO)
     &deinterlace_device,
 #endif
-#if defined(CONFIG_TVIN_VDIN)
-    &vdin_device,
-#endif
 #if defined(CONFIG_AML_AUDIO_DSP)
     &audiodsp_device,
 #endif
