@@ -52,21 +52,15 @@
 #include <mach/clk_set.h>
 #include "board-m3-reff16.h"
 
-
 #ifdef CONFIG_ANDROID_PMEM
 #include <linux/slab.h>
 #include <linux/dma-mapping.h>
 #include <linux/android_pmem.h>
 #endif
 
-
 #ifdef CONFIG_AMLOGIC_PM
 #include <linux/power_supply.h>
 #include <linux/aml_power.h>
-#endif
-
-#ifdef CONFIG_USB_ANDROID
-#include <linux/usb/android_composite.h>
 #endif
 
 #ifdef CONFIG_SUSPEND
@@ -1622,65 +1616,6 @@ static struct platform_device freescale_device =
     .resource       = freescale_resources,
 };
 #endif
-#ifdef CONFIG_USB_ANDROID
-#ifdef CONFIG_USB_ANDROID_MASS_STORAGE
-static struct usb_mass_storage_platform_data mass_storage_pdata = {
-       .nluns = 2,
-       .vendor = "DEV",
-       .product = "FROYO",
-       .release = 0x0100,
-};
-static struct platform_device usb_mass_storage_device = {
-       .name = "usb_mass_storage",
-       .id = -1,
-       .dev = {
-               .platform_data = &mass_storage_pdata,
-               },
-};
-#endif
-static char *usb_functions[] = { "usb_mass_storage" };
-static char *usb_functions_adb[] = { 
-#ifdef CONFIG_USB_ANDROID_MASS_STORAGE
-"usb_mass_storage", 
-#endif
-
-#ifdef CONFIG_USB_ANDROID_ADB
-"adb" 
-#endif
-};
-static struct android_usb_product usb_products[] = {
-       {
-               .product_id     = 0x0c01,
-               .num_functions  = ARRAY_SIZE(usb_functions),
-               .functions      = usb_functions,
-       },
-       {
-               .product_id     = 0x0c02,
-               .num_functions  = ARRAY_SIZE(usb_functions_adb),
-               .functions      = usb_functions_adb,
-       },
-};
-
-static struct android_usb_platform_data android_usb_pdata = {
-       .vendor_id      = 0x0bb4,
-       .product_id     = 0x0c01,
-       .version        = 0x0100,
-       .product_name   = "FROYO",
-       .manufacturer_name = "DEV",
-       .num_products = ARRAY_SIZE(usb_products),
-       .products = usb_products,
-       .num_functions = ARRAY_SIZE(usb_functions_adb),
-       .functions = usb_functions_adb,
-};
-
-static struct platform_device android_usb_device = {
-       .name   = "android_usb",
-       .id             = -1,
-       .dev            = {
-               .platform_data = &android_usb_pdata,
-       },
-};
-#endif
 
 #ifdef CONFIG_BT_DEVICE
 #include <linux/bt-device.h>
@@ -2408,12 +2343,6 @@ static struct platform_device __initdata *platform_devs[] = {
 #endif
 #if defined(CONFIG_AM_TV_OUTPUT2)
     &vout2_device,   
-#endif
-#ifdef CONFIG_USB_ANDROID
-    &android_usb_device,
-    #ifdef CONFIG_USB_ANDROID_MASS_STORAGE
-        &usb_mass_storage_device,
-    #endif
 #endif
 #ifdef CONFIG_POST_PROCESS_MANAGER
     &ppmgr_device,
