@@ -734,7 +734,6 @@ static void wifi_gpio_init(void)
 #endif
 }
 
-
 static void aml_wifi_bcm4018x_init()
 {
 	wifi_set_clk_enable(1);
@@ -781,6 +780,7 @@ static void inand_extern_init(void)
    SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_6, (0x1f<<25)); //set sdio c cmd&data
    SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_6, (0x1<<24)); //set sdio c clk
 }		
+
 static struct aml_card_info  amlogic_card_info[] = {
     [0] = {
         .name = "sd_card",
@@ -1365,8 +1365,8 @@ static int get_charge_status(void)
 static void power_off(void)
 {
     //Power hold down
-    //set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 0);
-    //set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
+    set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 0);
+    set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
 }
 
 static void set_bat_off(void)
@@ -1572,7 +1572,6 @@ static struct platform_device aml_efuse_device = {
            },
 };
 #endif
-
 
 #if  defined(CONFIG_AM_TV_OUTPUT)||defined(CONFIG_AM_TCON_OUTPUT)
 static struct resource vout_device_resources[] = {
@@ -2245,9 +2244,6 @@ static  struct platform_device cxd2834_device = {
 	.num_resources    = ARRAY_SIZE(cxd2834_resource),
 	.resource         = cxd2834_resource,
 };
-
-
-
 #endif
 
 #if defined(CONFIG_AM_SMARTCARD)
@@ -2274,7 +2270,6 @@ static  struct platform_device amlogic_smc_device = {
 	.resource         = amlogic_smc_resource,
 };
 #endif
-
 
 #if defined(CONFIG_AML_WATCHDOG)
 static struct platform_device aml_wdt_device = {
@@ -2493,16 +2488,12 @@ static int __init aml_i2c_init(void)
         ARRAY_SIZE(aml_i2c_bus_info_2)); 
     return 0;
 }
-//#define NET_EXT_CLK 1
+
 static void __init eth_pinmux_init(void)
 {
 	
    CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_6,(3<<17));//reg6[17/18]=0
-   #ifdef NET_EXT_CLK
-       eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_IN_GPIOY0_REG6_18, 0);
-   #else
-       eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_OUT_GPIOY0_REG6_17, 0);
-   #endif
+   eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_OUT_GPIOY0_REG6_17, 0);
 	
     //power hold
     //setbits_le32(P_PREG_AGPIO_O,(1<<8));
@@ -2546,10 +2537,8 @@ static void __init device_pinmux_init(void )
 		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<25));
 		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7,(1<<17));
 		SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<24));
-//    set_audio_pinmux(AUDIO_OUT_TEST_N);
-   // set_audio_pinmux(AUDIO_IN_JTAG);
-
-
+    // set_audio_pinmux(AUDIO_OUT_TEST_N);
+    // set_audio_pinmux(AUDIO_IN_JTAG);
 	
 #ifdef CONFIG_AM_MXL101
 	//for mxl101
@@ -2576,18 +2565,13 @@ static void __init device_pinmux_init(void )
 	clear_mio_mux(0, 1<<6);*/
 #endif
 
-
 #ifdef CONFIG_AM_AVL6211
-
 //for avl6211
 	printk("CONFIG_AM_AVL6211 set pinmux\n");
 	set_mio_mux(3, 0x3F<<6);
 //	clear_mio_mux(0, 1<<4);
 	clear_mio_mux(0, 0x7);
-
-
 #endif
-
 
 #ifdef CONFIG_AM_ITE9173
 //for ite9173
@@ -2622,15 +2606,13 @@ static void __init device_pinmux_init(void )
 #endif
 
 #ifdef CONFIG_AM_ITE9133
-
 //for ite9133
 	printk("CONFIG_AM_ITE9133 set pinmux\n");
 	set_mio_mux(3, 0xFFF<<6);
 //	clear_mio_mux(0, 1<<4);
 	clear_mio_mux(0, 0x3F);
-
-
 #endif
+
 #ifdef CONFIG_AM_DIB7090P
 	printk("CONFIG_AM_DIB7090P set pinmux\n");
 	set_mio_mux(3, 0x3F<<6);
@@ -2652,7 +2634,6 @@ static void __init device_pinmux_init(void )
     aml_wifi_bcm4018x_init();
 #endif
 
-
 }
 
 static void __init  device_clk_setting(void)
@@ -2672,11 +2653,12 @@ static void disable_unused_model(void)
 {
     CLK_GATE_OFF(VIDEO_IN);
     CLK_GATE_OFF(BT656_IN);
-  //  CLK_GATE_OFF(ETHERNET);
-//    CLK_GATE_OFF(SATA);
-//    CLK_GATE_OFF(WIFI);
-//    video_dac_disable();
- }
+//  CLK_GATE_OFF(ETHERNET);
+//  CLK_GATE_OFF(SATA);
+//  CLK_GATE_OFF(WIFI);
+//  video_dac_disable();
+}
+
 static void __init power_hold(void)
 {
     printk(KERN_INFO "power hold set high!\n");
