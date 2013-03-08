@@ -206,7 +206,7 @@ static  struct key_input_platform_data  key_input_pdata = {
     .fuzz_time = 60,
     .key_code_list = &_key_code_list[0],
     .key_num = ARRAY_SIZE(_key_code_list),
-.scan_func = key_scan,
+    .scan_func = key_scan,
     .init_func = key_input_init_func,
     .config =  2, 	// 0: interrupt;    	2: polling;
 };
@@ -248,7 +248,7 @@ static int ir_init()
 static int pwm_init()
 {
     CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7, (1<<16));
-	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0, (1<<29));
+    CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0, (1<<29));
     SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<26));
 }
 
@@ -902,7 +902,7 @@ int aml_m3_is_hp_pluged(void)
 	return 0; //return 1: hp pluged, 0: hp unpluged.
 }
 
-void mute_spk(struct snd_soc_codec* codec, int flag)
+void mute_spk(void* codec, int flag)
 {
 #ifdef _AML_M3_HW_DEBUG_
 	printk("***Entered %s:%s\n", __FILE__,__func__);
@@ -1134,31 +1134,30 @@ static void set_vccx2(int power_on)
     }
 }
 
+extern void hdmi_wr_reg(unsigned long addr, unsigned long data);
+
 static void set_gpio_suspend_resume(int power_on)
 {
     if(power_on)
     	{
     	printk("set gpio resume.\n");
-		 // HDMI
-        extern void hdmi_wr_reg(unsigned long addr, unsigned long data);
+	// HDMI
         hdmi_wr_reg(0x8005, 2); 
-		 udelay(50);
+	udelay(50);
         hdmi_wr_reg(0x8005, 1); 
         // LED
-       // WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0xff00<<0));
-    	}
-	else
-		{
+        WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0xff00<<0));
+    	} else {
     	printk("set gpio suspend.\n");
-		 // LED
-       // WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0<<0));
-		}
+	// LED
+	WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0<<0));
+	}
 }
 
 static struct meson_pm_config aml_pm_pdata = {
-    .pctl_reg_base = IO_APB_BUS_BASE,
-    .mmc_reg_base = APB_REG_ADDR(0x1000),
-    .hiu_reg_base = CBUS_REG_ADDR(0x1000),
+    .pctl_reg_base = (void __iomem *)IO_APB_BUS_BASE,
+    .mmc_reg_base = (void __iomem *)APB_REG_ADDR(0x1000),
+    .hiu_reg_base = (void __iomem *)CBUS_REG_ADDR(0x1000),
     .power_key = (1<<8),
     .ddr_clk = 0x00110820,
     .sleepcount = 128,
@@ -2732,20 +2731,23 @@ static void __init LED_PWM_REG0_init(void)
 #endif
 }
 
+#ifdef CONFIG_AML_SUSPEND
+extern int (*pm_power_suspend)(void);
+#endif /*CONFIG_AML_SUSPEND*/
+
 static __init void m1_init_machine(void)
 {
     meson_cache_init();
-#ifdef CONFIG_AML_SUSPEND
-		extern int (*pm_power_suspend)(void);
-		pm_power_suspend = meson_power_suspend;
-#endif /*CONFIG_AML_SUSPEND*/
+
+    #ifdef CONFIG_AML_SUSPEND
+    pm_power_suspend = meson_power_suspend;
+    #endif /*CONFIG_AML_SUSPEND*/
     
     power_hold();
-//    pm_power_off = power_off;		//Elvis fool
+//  pm_power_off = power_off;		//Elvis fool
     device_clk_setting();
     device_pinmux_init();
-//    LED_PWM_REG0_init();
-
+//  LED_PWM_REG0_init();
 	
 #ifdef CONFIG_VIDEO_AMLOGIC_CAPTURE
     camera_power_on_init();
