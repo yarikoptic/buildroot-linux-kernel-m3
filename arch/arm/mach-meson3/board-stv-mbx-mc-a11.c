@@ -80,13 +80,16 @@
 #include <linux/hdmi/hdmi_config.h>
 #endif
 
+/* GPIO Defines */
+#define GPIO_LED_POWER (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10)
+
 #if defined(CONFIG_LEDS_GPIO)
 /* LED Class Support for PowerLed */
 static struct gpio_led aml_led_pins[] = {
 	{
 		.name		 = "Powerled",
 		.default_trigger = "default-on",
-		.gpio		 = (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10), // GPIOAO10
+		.gpio		 = GPIO_LED_POWER, // GPIOAO10
 		.active_low	 = 1,
 	},
 };
@@ -1233,8 +1236,6 @@ static void device_hardware_id_init(void) {
 extern int (*pm_power_suspend)(void);
 #endif /*CONFIG_AML_SUSPEND*/
 
-#define GPIO_LED_POWER (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10)
-
 static __init void m1_init_machine(void)
 {
 	meson_cache_init();
@@ -1245,9 +1246,6 @@ static __init void m1_init_machine(void)
 	power_hold();
 	device_clk_setting();
 	device_pinmux_init();
-	printk("Set GPIO PowerLed.\n");
-	gpio_direction_output(GPIO_LED_POWER, 0);
-	printk("Add Platform Devices.\n");
 	platform_add_devices(platform_devs, ARRAY_SIZE(platform_devs));
 
 #ifdef CONFIG_USB_DWC_OTG_HCD
