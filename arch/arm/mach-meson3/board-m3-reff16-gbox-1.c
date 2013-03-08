@@ -75,13 +75,16 @@
 #include <linux/hdmi/hdmi_config.h>
 #endif
 
-#if defined(CONFIG_LEDS_CLASS)
+/* GPIO Defines */
+#define GPIO_LED_POWER (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10)
+
+#if defined(CONFIG_LEDS_GPIO)
 /* LED Class Support for PowerLed */
 static struct gpio_led aml_led_pins[] = {
   {
-    .name     = "PowerLed",
+    .name     = "Powerled",
     .default_trigger = "default-on",
-    .gpio     = (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bank_bit0_11(10), // GPIOAO10
+    .gpio     = GPIO_LED_POWER, // GPIOAO10
     .active_low   = 1,
   },
 };
@@ -2272,7 +2275,7 @@ struct platform_device meson_device_eth = {
 };
 #endif
 static struct platform_device __initdata *platform_devs[] = {
-#if defined(CONFIG_LEDS_CLASS)
+#if defined(CONFIG_LEDS_GPIO)
     &aml_leds,
 #endif
 #if defined(ETH_PM_DEV)
@@ -2680,6 +2683,7 @@ static __init void m1_init_machine(void)
 //  pm_power_off = power_off;		//Elvis fool
     device_clk_setting();
     device_pinmux_init();
+    platform_add_devices(platform_devs, ARRAY_SIZE(platform_devs));
 //  LED_PWM_REG0_init();
 	
 #ifdef CONFIG_VIDEO_AMLOGIC_CAPTURE
