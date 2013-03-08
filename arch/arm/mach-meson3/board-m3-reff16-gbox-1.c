@@ -73,10 +73,6 @@
 #include <mach/pm.h>
 #endif
 
-#ifdef CONFIG_VIDEO_AMLOGIC_CAPTURE
-#include <media/amlogic/aml_camera.h>
-#endif
-
 #ifdef CONFIG_EFUSE
 #include <linux/efuse.h>
 #endif
@@ -1014,17 +1010,6 @@ static struct platform_device vm_device =
     .resource      = vm_resources,
 };
 #endif /* AMLOGIC_VIDEOIN_MANAGER */
-
-#ifdef CONFIG_VIDEO_AMLOGIC_CAPTURE
-static void __init camera_power_on_init(void)
-{
-    udelay(1000);
-    SET_CBUS_REG_MASK(HHI_ETH_CLK_CNTL,0x30f);// 24M XTAL
-    SET_CBUS_REG_MASK(HHI_DEMOD_PLL_CNTL,0x232);// 24M XTAL
-
-    //eth_set_pinmux(ETH_BANK0_GPIOC3_C12,ETH_CLK_OUT_GPIOC12_REG3_1, 1);		
-}
-#endif
 
 #if defined(CONFIG_SUSPEND)
 
