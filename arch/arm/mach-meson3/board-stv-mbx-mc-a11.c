@@ -98,7 +98,7 @@ static struct gpio_led aml_led_pins[] = {
 		.name		 = "Statusled",
 		.default_trigger = "default-on",
 		.gpio		 = GPIO_LED_STATUS, // GPIOAO10
-		.active_low	 = 0,
+		.active_low	 = 1,
 	},
 };
 
