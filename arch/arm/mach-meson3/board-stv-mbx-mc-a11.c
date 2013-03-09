@@ -80,6 +80,42 @@
 #include <linux/hdmi/hdmi_config.h>
 #endif
 
+
+/* GPIO Defines */
+#define GPIO_LED_POWER  (GPIOAO_bank_bit0_11(11) << 16 ) |  GPIOAO_bit_bit0_11(11)
+#define GPIO_LED_STATUS (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10)
+
+#if defined(CONFIG_LEDS_GPIO)
+/* LED Class Support for the leds */
+static struct gpio_led aml_led_pins[] = {
+	{
+		.name		 = "Powerled",
+		.default_trigger = "default-on",
+		.gpio		 = GPIO_LED_POWER, // GPIOAO11
+		.active_low	 = 0,
+	},
+	{
+		.name		 = "Statusled",
+		.default_trigger = "none",
+		.gpio		 = GPIO_LED_STATUS, // GPIOAO10
+		.active_low	 = 1,
+	},
+};
+
+static struct gpio_led_platform_data aml_led_data = {
+	.leds	  = aml_led_pins,
+	.num_leds = ARRAY_SIZE(aml_led_pins),
+};
+
+static struct platform_device aml_leds = {
+	.name	= "leds-gpio",
+	.id	= -1,
+	.dev	= {
+		.platform_data	= &aml_led_data,
+	}
+};
+#endif
+
 #if defined(CONFIG_AML_HDMI_TX)
 static struct hdmi_phy_set_data brd_phy_data[] = {
 	{-1,   -1},         //end of phy setting
@@ -1010,12 +1046,12 @@ static struct platform_device aml_wdt_device = {
 #define ETH_MODE_RMII_EXTERNAL
 static void meson_eth_clock_enable(int flag)
 {
-    printk("meson_eth_clock_enable: %x", (unsigned int)flag );
+    printk("meson_eth_clock_enable: %x\n", (unsigned int)flag );
 }
 
 static void meson_eth_reset(void)
 {
-    printk("meson_eth_reset");
+    printk("meson_eth_reset\n");
     set_gpio_mode(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), GPIO_OUTPUT_MODE);
     set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 0);
     mdelay(100);
@@ -1037,6 +1073,9 @@ struct platform_device meson_device_eth = {
 #endif
 
 static struct platform_device __initdata *platform_devs[] = {
+#if defined(CONFIG_LEDS_GPIO)
+	&aml_leds,
+#endif
 #if defined(ETH_PM_DEV)
 	&meson_device_eth,
 #endif
