@@ -733,7 +733,7 @@ static struct aml_sw_i2c_platform aml_sw_i2c_plat = {
 
 static struct platform_device aml_sw_i2c_device = {
     .name = "aml-sw-i2c",
-    .id = 1,
+    .id = 0,
     .dev = {
         .platform_data = &aml_sw_i2c_plat,
     },
