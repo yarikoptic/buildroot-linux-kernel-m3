@@ -90,13 +90,13 @@
 static struct gpio_led aml_led_pins[] = {
 	{
 		.name		 = "Powerled",
-		.default_trigger = "heartbeat",
+		.default_trigger = "default-on",
 		.gpio		 = GPIO_LED_POWER, // GPIOAO11
 		.active_low	 = 0,
 	},
 	{
 		.name		 = "Statusled",
-		.default_trigger = "default-on",
+		.default_trigger = "none",
 		.gpio		 = GPIO_LED_STATUS, // GPIOAO10
 		.active_low	 = 1,
 	},
