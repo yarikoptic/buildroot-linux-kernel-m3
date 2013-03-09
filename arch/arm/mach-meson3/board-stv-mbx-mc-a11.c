@@ -86,7 +86,7 @@
 #define GPIO_LED_STATUS (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10)
 
 #if defined(CONFIG_LEDS_GPIO)
-/* LED Class Support for PowerLed */
+/* LED Class Support for the leds */
 static struct gpio_led aml_led_pins[] = {
 	{
 		.name		 = "Powerled",
