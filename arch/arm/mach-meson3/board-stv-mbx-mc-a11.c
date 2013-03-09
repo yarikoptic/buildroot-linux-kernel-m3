@@ -80,17 +80,25 @@
 #include <linux/hdmi/hdmi_config.h>
 #endif
 
+
 /* GPIO Defines */
-#define GPIO_LED_POWER (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10)
+#define GPIO_LED_POWER  (GPIOAO_bank_bit0_11(11) << 16 ) |  GPIOAO_bit_bit0_11(11)
+#define GPIO_LED_STATUS (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10)
 
 #if defined(CONFIG_LEDS_GPIO)
 /* LED Class Support for PowerLed */
 static struct gpio_led aml_led_pins[] = {
 	{
 		.name		 = "Powerled",
+		.default_trigger = "heartbeat",
+		.gpio		 = GPIO_LED_POWER, // GPIOAO11
+		.active_low	 = 0,
+	},
+	{
+		.name		 = "Statusled",
 		.default_trigger = "default-on",
-		.gpio		 = GPIO_LED_POWER, // GPIOAO10
-		.active_low	 = 1,
+		.gpio		 = GPIO_LED_STATUS, // GPIOAO10
+		.active_low	 = 0,
 	},
 };
 
