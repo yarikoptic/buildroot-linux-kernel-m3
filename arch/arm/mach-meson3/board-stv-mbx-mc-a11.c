@@ -80,16 +80,34 @@
 #include <linux/hdmi/hdmi_config.h>
 #endif
 
+
 /* GPIO Defines */
-#define GPIO_LED_POWER (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10)
+// LEDS
+#define GPIO_LED_STATUS ( GPIOAO_bank_bit0_11(10) << 16 ) | GPIOAO_bit_bit0_11(10)
+#define GPIO_LED_POWER  ( GPIOAO_bank_bit0_11(11) << 16 ) | GPIOAO_bit_bit0_11(11)
+// ETHERNET
+#define GPIO_ETH_RESET  ( GPIOD_bank_bit0_9(7)    << 16 ) | GPIOD_bit_bit0_9(7)
+// BUTTONS
+#define GPIO_KEY_POWER  ( GPIOAO_bank_bit0_11(3)  << 16 ) | GPIOAO_bit_bit0_11(3)
+// POWERSUPPLIES
+#define GPIO_PWR_USB_B  ( GPIOC_bank_bit0_15(5)   << 16 ) | GPIOC_bit_bit0_15(5)
+#define GPIO_PWR_VCCIO  ( GPIOAO_bank_bit0_11(2)  << 16 ) | GPIOAO_bit_bit0_11(2)
+#define GPIO_PWR_VCCK   ( GPIOAO_bank_bit0_11(6)  << 16 ) | GPIOAO_bit_bit0_11(6)
+#define GPIO_PWR_HDMI   ( GPIOD_bank_bit0_9(6)    << 16 ) | GPIOD_bit_bit0_9(6)
 
 #if defined(CONFIG_LEDS_GPIO)
-/* LED Class Support for PowerLed */
+/* LED Class Support for the leds */
 static struct gpio_led aml_led_pins[] = {
 	{
 		.name		 = "Powerled",
 		.default_trigger = "default-on",
-		.gpio		 = GPIO_LED_POWER, // GPIOAO10
+		.gpio		 = GPIO_LED_POWER, // GPIOAO11
+		.active_low	 = 0,
+	},
+	{
+		.name		 = "Statusled",
+		.default_trigger = "none",
+		.gpio		 = GPIO_LED_STATUS, // GPIOAO10
 		.active_low	 = 1,
 	},
 };
@@ -219,7 +237,7 @@ int _key_code_list[] = {KEY_POWER};
 static inline int key_input_init_func(void)
 {
 	// Power Button, GPIO AO3, ACTIVE LOW
-	set_gpio_mode(GPIOAO_bank_bit0_11(3), GPIOAO_bit_bit0_11(3), GPIO_INPUT_MODE);
+	gpio_direction_input(GPIO_KEY_POWER);
 	return 0;
 }
 
@@ -236,7 +254,7 @@ static inline int key_scan(int *key_state_list)
 		}
 	else
 #endif
-	key_state_list[0] = get_gpio_val(GPIOAO_bank_bit0_11(3), GPIOAO_bit_bit0_11(3))?0:1;
+	key_state_list[0] = gpio_get_value(GPIO_KEY_POWER) ? 0 : 1 ;
 	return ret;
 }
 
@@ -395,19 +413,13 @@ static void set_usb_a_vbus_power(char is_power_on)
 }
 
 static void set_usb_b_vbus_power(char is_power_on) {
-#define USB_B_POW_GPIO         GPIOC_bank_bit0_15(5)
-#define USB_B_POW_GPIO_BIT     GPIOC_bit_bit0_15(5)
-#define USB_B_POW_GPIO_BIT_ON   0
-#define USB_B_POW_GPIO_BIT_OFF  1
     /* USB +3v3 Power Enable internal port, GPIO C5, ACTIVE LOW */
     if(is_power_on) {
-        printk(KERN_INFO "set usb b port power on (board gpio %d)!\n", USB_B_POW_GPIO_BIT);
-        set_gpio_mode(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, GPIO_OUTPUT_MODE);
-        set_gpio_val(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, USB_B_POW_GPIO_BIT_ON);
-    } else    {
-        printk(KERN_INFO "set usb b port power off (board gpio %d)!\n",USB_B_POW_GPIO_BIT);
-        set_gpio_mode(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, GPIO_OUTPUT_MODE);
-        set_gpio_val(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, USB_B_POW_GPIO_BIT_OFF);
+        printk(KERN_INFO "set usb b port power on.\n");
+	gpio_direction_output(GPIO_PWR_USB_B, 0);
+    } else {
+        printk(KERN_INFO "set usb b port power off.!\n");
+	gpio_direction_output(GPIO_PWR_USB_B, 1);
     }
 }
 
@@ -761,7 +773,7 @@ static struct aml_sw_i2c_platform aml_sw_i2c_plat = {
 
 static struct platform_device aml_sw_i2c_device = {
     .name = "aml-sw-i2c",
-    .id = 1,
+    .id = 0,
     .dev = {
         .platform_data = &aml_sw_i2c_plat,
     },
@@ -990,7 +1002,7 @@ static struct platform_device vout2_device = {
 };
 #endif
 
- #ifdef CONFIG_POST_PROCESS_MANAGER
+#ifdef CONFIG_POST_PROCESS_MANAGER
 static struct resource ppmgr_resources[] = {
     [0] = {
         .start = PPMGR_ADDR_START,
@@ -1044,10 +1056,10 @@ static void meson_eth_clock_enable(int flag)
 static void meson_eth_reset(void)
 {
     printk("meson_eth_reset\n");
-    set_gpio_mode(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), GPIO_OUTPUT_MODE);
-    set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 0);
+    // Ethernet Reset, GPIO D7, ACTIVE LOW
+    gpio_direction_output(GPIO_ETH_RESET, 0);
     mdelay(100);
-    set_gpio_val(GPIOD_bank_bit0_9(7), GPIOD_bit_bit0_9(7), 1);
+    gpio_set_value(GPIO_ETH_RESET, 1);
 }
 
 static struct aml_eth_platform_data aml_pm_eth_platform_data = {
@@ -1209,17 +1221,14 @@ static void __init power_hold(void)
 
 	printk(KERN_INFO "set_vccio and set_vcck power up\n");
 	// VCCIO +2V5 GPIO AO2, ACTIVE HIGH
-	set_gpio_val(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), 1);
-	set_gpio_mode(GPIOAO_bank_bit0_11(2), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
+	gpio_direction_output( GPIO_PWR_VCCIO, 1);
 
 	// VCCK +5V GPIO AO6, ACTIVE HIGH.
-	set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(2), 1);
-	set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(2), GPIO_OUTPUT_MODE);
+	gpio_direction_output( GPIO_PWR_VCCK, 1);
 
 	printk(KERN_INFO "set_hdmi power up\n");
 	// HDMI Power +5V -- GPIO D6, ACTIVE HIGH
-        set_gpio_mode(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), GPIO_OUTPUT_MODE);
-        set_gpio_val(GPIOD_bank_bit0_9(6), GPIOD_bit_bit0_9(6), 1);
+	gpio_direction_output( GPIO_PWR_HDMI, 1);
 }
 
 static void device_hardware_id_init(void) {
