@@ -52,29 +52,19 @@
 #include <mach/clk_set.h>
 #include "board-m3-reff16.h"
 
-
 #ifdef CONFIG_ANDROID_PMEM
 #include <linux/slab.h>
 #include <linux/dma-mapping.h>
 #include <linux/android_pmem.h>
 #endif
 
-
 #ifdef CONFIG_AMLOGIC_PM
 #include <linux/power_supply.h>
 #include <linux/aml_power.h>
 #endif
 
-#ifdef CONFIG_USB_ANDROID
-#include <linux/usb/android_composite.h>
-#endif
-
 #ifdef CONFIG_SUSPEND
 #include <mach/pm.h>
-#endif
-
-#ifdef CONFIG_VIDEO_AMLOGIC_CAPTURE
-#include <media/amlogic/aml_camera.h>
 #endif
 
 #ifdef CONFIG_EFUSE
@@ -83,6 +73,34 @@
 
 #ifdef CONFIG_AML_HDMI_TX
 #include <linux/hdmi/hdmi_config.h>
+#endif
+
+/* GPIO Defines */
+#define GPIO_LED_POWER (GPIOAO_bank_bit0_11(10) << 16 ) |  GPIOAO_bit_bit0_11(10)
+
+#if defined(CONFIG_LEDS_GPIO)
+/* LED Class Support for PowerLed */
+static struct gpio_led aml_led_pins[] = {
+  {
+    .name     = "Powerled",
+    .default_trigger = "default-on",
+    .gpio     = GPIO_LED_POWER, // GPIOAO10
+    .active_low   = 1,
+  },
+};
+
+static struct gpio_led_platform_data aml_led_data = {
+  .leds    = aml_led_pins,
+  .num_leds = ARRAY_SIZE(aml_led_pins),
+};
+
+static struct platform_device aml_leds = {
+  .name  = "leds-gpio",
+  .id  = -1,
+  .dev  = {
+    .platform_data  = &aml_led_data,
+  }
+};
 #endif
 
 #ifdef CONFIG_SUSPEND
@@ -206,7 +224,7 @@ static  struct key_input_platform_data  key_input_pdata = {
     .fuzz_time = 60,
     .key_code_list = &_key_code_list[0],
     .key_num = ARRAY_SIZE(_key_code_list),
-.scan_func = key_scan,
+    .scan_func = key_scan,
     .init_func = key_input_init_func,
     .config =  2, 	// 0: interrupt;    	2: polling;
 };
@@ -248,7 +266,7 @@ static int ir_init()
 static int pwm_init()
 {
     CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7, (1<<16));
-	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0, (1<<29));
+    CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0, (1<<29));
     SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<26));
 }
 
@@ -734,7 +752,6 @@ static void wifi_gpio_init(void)
 #endif
 }
 
-
 static void aml_wifi_bcm4018x_init()
 {
 	wifi_set_clk_enable(1);
@@ -781,6 +798,7 @@ static void inand_extern_init(void)
    SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_6, (0x1f<<25)); //set sdio c cmd&data
    SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_6, (0x1<<24)); //set sdio c clk
 }		
+
 static struct aml_card_info  amlogic_card_info[] = {
     [0] = {
         .name = "sd_card",
@@ -902,7 +920,7 @@ int aml_m3_is_hp_pluged(void)
 	return 0; //return 1: hp pluged, 0: hp unpluged.
 }
 
-void mute_spk(struct snd_soc_codec* codec, int flag)
+void mute_spk(void* codec, int flag)
 {
 #ifdef _AML_M3_HW_DEBUG_
 	printk("***Entered %s:%s\n", __FILE__,__func__);
@@ -1015,17 +1033,6 @@ static struct platform_device vm_device =
 };
 #endif /* AMLOGIC_VIDEOIN_MANAGER */
 
-#ifdef CONFIG_VIDEO_AMLOGIC_CAPTURE
-static void __init camera_power_on_init(void)
-{
-    udelay(1000);
-    SET_CBUS_REG_MASK(HHI_ETH_CLK_CNTL,0x30f);// 24M XTAL
-    SET_CBUS_REG_MASK(HHI_DEMOD_PLL_CNTL,0x232);// 24M XTAL
-
-    //eth_set_pinmux(ETH_BANK0_GPIOC3_C12,ETH_CLK_OUT_GPIOC12_REG3_1, 1);		
-}
-#endif
-
 #if defined(CONFIG_SUSPEND)
 
 typedef struct {
@@ -1134,31 +1141,30 @@ static void set_vccx2(int power_on)
     }
 }
 
+extern void hdmi_wr_reg(unsigned long addr, unsigned long data);
+
 static void set_gpio_suspend_resume(int power_on)
 {
     if(power_on)
     	{
     	printk("set gpio resume.\n");
-		 // HDMI
-        extern void hdmi_wr_reg(unsigned long addr, unsigned long data);
+	// HDMI
         hdmi_wr_reg(0x8005, 2); 
-		 udelay(50);
+	udelay(50);
         hdmi_wr_reg(0x8005, 1); 
         // LED
-       // WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0xff00<<0));
-    	}
-	else
-		{
+        //WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0xff00<<0));
+    	} else {
     	printk("set gpio suspend.\n");
-		 // LED
-       // WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0<<0));
-		}
+	// LED
+	//WRITE_CBUS_REG(PWM_PWM_C, (0xff00<<16) |(0<<0));
+	}
 }
 
 static struct meson_pm_config aml_pm_pdata = {
-    .pctl_reg_base = IO_APB_BUS_BASE,
-    .mmc_reg_base = APB_REG_ADDR(0x1000),
-    .hiu_reg_base = CBUS_REG_ADDR(0x1000),
+    .pctl_reg_base = (void __iomem *)IO_APB_BUS_BASE,
+    .mmc_reg_base = (void __iomem *)APB_REG_ADDR(0x1000),
+    .hiu_reg_base = (void __iomem *)CBUS_REG_ADDR(0x1000),
     .power_key = (1<<8),
     .ddr_clk = 0x00110820,
     .sleepcount = 128,
@@ -1365,8 +1371,8 @@ static int get_charge_status(void)
 static void power_off(void)
 {
     //Power hold down
-    //set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 0);
-    //set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
+    set_gpio_val(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), 0);
+    set_gpio_mode(GPIOAO_bank_bit0_11(6), GPIOAO_bit_bit0_11(6), GPIO_OUTPUT_MODE);
 }
 
 static void set_bat_off(void)
@@ -1573,7 +1579,6 @@ static struct platform_device aml_efuse_device = {
 };
 #endif
 
-
 #if  defined(CONFIG_AM_TV_OUTPUT)||defined(CONFIG_AM_TCON_OUTPUT)
 static struct resource vout_device_resources[] = {
     [0] = {
@@ -1637,65 +1642,6 @@ static struct platform_device freescale_device =
     .id             = 0,
     .num_resources  = ARRAY_SIZE(freescale_resources),
     .resource       = freescale_resources,
-};
-#endif
-#ifdef CONFIG_USB_ANDROID
-#ifdef CONFIG_USB_ANDROID_MASS_STORAGE
-static struct usb_mass_storage_platform_data mass_storage_pdata = {
-       .nluns = 2,
-       .vendor = "DEV",
-       .product = "FROYO",
-       .release = 0x0100,
-};
-static struct platform_device usb_mass_storage_device = {
-       .name = "usb_mass_storage",
-       .id = -1,
-       .dev = {
-               .platform_data = &mass_storage_pdata,
-               },
-};
-#endif
-static char *usb_functions[] = { "usb_mass_storage" };
-static char *usb_functions_adb[] = { 
-#ifdef CONFIG_USB_ANDROID_MASS_STORAGE
-"usb_mass_storage", 
-#endif
-
-#ifdef CONFIG_USB_ANDROID_ADB
-"adb" 
-#endif
-};
-static struct android_usb_product usb_products[] = {
-       {
-               .product_id     = 0x0c01,
-               .num_functions  = ARRAY_SIZE(usb_functions),
-               .functions      = usb_functions,
-       },
-       {
-               .product_id     = 0x0c02,
-               .num_functions  = ARRAY_SIZE(usb_functions_adb),
-               .functions      = usb_functions_adb,
-       },
-};
-
-static struct android_usb_platform_data android_usb_pdata = {
-       .vendor_id      = 0x0bb4,
-       .product_id     = 0x0c01,
-       .version        = 0x0100,
-       .product_name   = "FROYO",
-       .manufacturer_name = "DEV",
-       .num_products = ARRAY_SIZE(usb_products),
-       .products = usb_products,
-       .num_functions = ARRAY_SIZE(usb_functions_adb),
-       .functions = usb_functions_adb,
-};
-
-static struct platform_device android_usb_device = {
-       .name   = "android_usb",
-       .id             = -1,
-       .dev            = {
-               .platform_data = &android_usb_pdata,
-       },
 };
 #endif
 
@@ -2245,9 +2191,6 @@ static  struct platform_device cxd2834_device = {
 	.num_resources    = ARRAY_SIZE(cxd2834_resource),
 	.resource         = cxd2834_resource,
 };
-
-
-
 #endif
 
 #if defined(CONFIG_AM_SMARTCARD)
@@ -2274,7 +2217,6 @@ static  struct platform_device amlogic_smc_device = {
 	.resource         = amlogic_smc_resource,
 };
 #endif
-
 
 #if defined(CONFIG_AML_WATCHDOG)
 static struct platform_device aml_wdt_device = {
@@ -2333,6 +2275,9 @@ struct platform_device meson_device_eth = {
 };
 #endif
 static struct platform_device __initdata *platform_devs[] = {
+#if defined(CONFIG_LEDS_GPIO)
+    &aml_leds,
+#endif
 #if defined(ETH_PM_DEV)
     &meson_device_eth,
 #endif
@@ -2354,9 +2299,6 @@ static struct platform_device __initdata *platform_devs[] = {
 #endif
 #if defined(CONFIG_AM_VIDEO)
     &deinterlace_device,
-#endif
-#if defined(CONFIG_TVIN_VDIN)
-    &vdin_device,
 #endif
 #if defined(CONFIG_AML_AUDIO_DSP)
     &audiodsp_device,
@@ -2395,17 +2337,11 @@ static struct platform_device __initdata *platform_devs[] = {
 #ifdef CONFIG_AM_NAND
     &aml_nand_device,
 #endif
-#if defined(CONFIG_NAND_FLASH_DRIVER_MULTIPLANE_CE)
-    &aml_nand_device,
-#endif
 #ifdef CONFIG_BT_DEVICE
  	&bt_device,
 #endif
 #if defined(CONFIG_AML_RTC)
     &aml_rtc_device,
-#endif
-#ifdef CONFIG_AMLOGIC_VIDEOIN_MANAGER
-	&vm_device,
 #endif
 #if defined(CONFIG_SUSPEND)
     &aml_pm_device,
@@ -2429,12 +2365,6 @@ static struct platform_device __initdata *platform_devs[] = {
 #endif
 #if defined(CONFIG_AM_TV_OUTPUT2)
     &vout2_device,   
-#endif
-#ifdef CONFIG_USB_ANDROID
-    &android_usb_device,
-    #ifdef CONFIG_USB_ANDROID_MASS_STORAGE
-        &usb_mass_storage_device,
-    #endif
 #endif
 #ifdef CONFIG_POST_PROCESS_MANAGER
     &ppmgr_device,
@@ -2493,16 +2423,12 @@ static int __init aml_i2c_init(void)
         ARRAY_SIZE(aml_i2c_bus_info_2)); 
     return 0;
 }
-//#define NET_EXT_CLK 1
+
 static void __init eth_pinmux_init(void)
 {
 	
    CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_6,(3<<17));//reg6[17/18]=0
-   #ifdef NET_EXT_CLK
-       eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_IN_GPIOY0_REG6_18, 0);
-   #else
-       eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_OUT_GPIOY0_REG6_17, 0);
-   #endif
+   eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_OUT_GPIOY0_REG6_17, 0);
 	
     //power hold
     //setbits_le32(P_PREG_AGPIO_O,(1<<8));
@@ -2546,10 +2472,8 @@ static void __init device_pinmux_init(void )
 		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<25));
 		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7,(1<<17));
 		SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<24));
-//    set_audio_pinmux(AUDIO_OUT_TEST_N);
-   // set_audio_pinmux(AUDIO_IN_JTAG);
-
-
+    // set_audio_pinmux(AUDIO_OUT_TEST_N);
+    // set_audio_pinmux(AUDIO_IN_JTAG);
 	
 #ifdef CONFIG_AM_MXL101
 	//for mxl101
@@ -2576,18 +2500,13 @@ static void __init device_pinmux_init(void )
 	clear_mio_mux(0, 1<<6);*/
 #endif
 
-
 #ifdef CONFIG_AM_AVL6211
-
 //for avl6211
 	printk("CONFIG_AM_AVL6211 set pinmux\n");
 	set_mio_mux(3, 0x3F<<6);
 //	clear_mio_mux(0, 1<<4);
 	clear_mio_mux(0, 0x7);
-
-
 #endif
-
 
 #ifdef CONFIG_AM_ITE9173
 //for ite9173
@@ -2622,15 +2541,13 @@ static void __init device_pinmux_init(void )
 #endif
 
 #ifdef CONFIG_AM_ITE9133
-
 //for ite9133
 	printk("CONFIG_AM_ITE9133 set pinmux\n");
 	set_mio_mux(3, 0xFFF<<6);
 //	clear_mio_mux(0, 1<<4);
 	clear_mio_mux(0, 0x3F);
-
-
 #endif
+
 #ifdef CONFIG_AM_DIB7090P
 	printk("CONFIG_AM_DIB7090P set pinmux\n");
 	set_mio_mux(3, 0x3F<<6);
@@ -2652,7 +2569,6 @@ static void __init device_pinmux_init(void )
     aml_wifi_bcm4018x_init();
 #endif
 
-
 }
 
 static void __init  device_clk_setting(void)
@@ -2672,11 +2588,12 @@ static void disable_unused_model(void)
 {
     CLK_GATE_OFF(VIDEO_IN);
     CLK_GATE_OFF(BT656_IN);
-  //  CLK_GATE_OFF(ETHERNET);
-//    CLK_GATE_OFF(SATA);
-//    CLK_GATE_OFF(WIFI);
-//    video_dac_disable();
- }
+//  CLK_GATE_OFF(ETHERNET);
+//  CLK_GATE_OFF(SATA);
+//  CLK_GATE_OFF(WIFI);
+//  video_dac_disable();
+}
+
 static void __init power_hold(void)
 {
     printk(KERN_INFO "power hold set high!\n");
@@ -2750,20 +2667,24 @@ static void __init LED_PWM_REG0_init(void)
 #endif
 }
 
+#ifdef CONFIG_AML_SUSPEND
+extern int (*pm_power_suspend)(void);
+#endif /*CONFIG_AML_SUSPEND*/
+
 static __init void m1_init_machine(void)
 {
     meson_cache_init();
-#ifdef CONFIG_AML_SUSPEND
-		extern int (*pm_power_suspend)(void);
-		pm_power_suspend = meson_power_suspend;
-#endif /*CONFIG_AML_SUSPEND*/
+
+    #ifdef CONFIG_AML_SUSPEND
+    pm_power_suspend = meson_power_suspend;
+    #endif /*CONFIG_AML_SUSPEND*/
     
     power_hold();
-//    pm_power_off = power_off;		//Elvis fool
+//  pm_power_off = power_off;		//Elvis fool
     device_clk_setting();
     device_pinmux_init();
-//    LED_PWM_REG0_init();
-
+    platform_add_devices(platform_devs, ARRAY_SIZE(platform_devs));
+//  LED_PWM_REG0_init();
 	
 #ifdef CONFIG_VIDEO_AMLOGIC_CAPTURE
     camera_power_on_init();
