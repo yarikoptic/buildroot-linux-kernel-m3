@@ -80,20 +80,19 @@
 #include <linux/hdmi/hdmi_config.h>
 #endif
 
-
 /* GPIO Defines */
 // LEDS
-#define GPIO_LED_STATUS ( GPIOAO_bank_bit0_11(10) << 16 ) | GPIOAO_bit_bit0_11(10)
-#define GPIO_LED_POWER  ( GPIOAO_bank_bit0_11(11) << 16 ) | GPIOAO_bit_bit0_11(11)
+#define GPIO_LED_STATUS GPIO_AO(10) // ( GPIOAO_bank_bit0_11(10) << 16 ) | GPIOAO_bit_bit0_11(10)
+#define GPIO_LED_POWER  GPIO_AO(11) // ( GPIOAO_bank_bit0_11(11) << 16 ) | GPIOAO_bit_bit0_11(11)
 // ETHERNET
-#define GPIO_ETH_RESET  ( GPIOD_bank_bit0_9(7)    << 16 ) | GPIOD_bit_bit0_9(7)
+#define GPIO_ETH_RESET  GPIO_D(7)   // ( GPIOD_bank_bit0_9(7)    << 16 ) | GPIOD_bit_bit0_9(7)
 // BUTTONS
-#define GPIO_KEY_POWER  ( GPIOAO_bank_bit0_11(3)  << 16 ) | GPIOAO_bit_bit0_11(3)
+#define GPIO_KEY_POWER  GPIO_AO(3)  // ( GPIOAO_bank_bit0_11(3)  << 16 ) | GPIOAO_bit_bit0_11(3)
 // POWERSUPPLIES
-#define GPIO_PWR_USB_B  ( GPIOC_bank_bit0_15(5)   << 16 ) | GPIOC_bit_bit0_15(5)
-#define GPIO_PWR_VCCIO  ( GPIOAO_bank_bit0_11(2)  << 16 ) | GPIOAO_bit_bit0_11(2)
-#define GPIO_PWR_VCCK   ( GPIOAO_bank_bit0_11(6)  << 16 ) | GPIOAO_bit_bit0_11(6)
-#define GPIO_PWR_HDMI   ( GPIOD_bank_bit0_9(6)    << 16 ) | GPIOD_bit_bit0_9(6)
+#define GPIO_PWR_USB_B  GPIO_C(5)   // ( GPIOC_bank_bit0_15(5)   << 16 ) | GPIOC_bit_bit0_15(5)
+#define GPIO_PWR_VCCIO  GPIO_AO(2)  // ( GPIOAO_bank_bit0_11(2)  << 16 ) | GPIOAO_bit_bit0_11(2)
+#define GPIO_PWR_VCCK   GPIO_AO(6)  // ( GPIOAO_bank_bit0_11(6)  << 16 ) | GPIOAO_bit_bit0_11(6)
+#define GPIO_PWR_HDMI   GPIO_D(6)   // ( GPIOD_bank_bit0_9(6)    << 16 ) | GPIOD_bit_bit0_9(6)
 
 #if defined(CONFIG_LEDS_GPIO)
 /* LED Class Support for the leds */
