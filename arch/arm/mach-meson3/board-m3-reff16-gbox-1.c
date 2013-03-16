@@ -86,6 +86,8 @@ static int suspend_state=0;
 /* GPIO Defines */
 // ETHERNET
 #define GPIO_ETH_RESET  GPIO_D(7)
+// BUTTONS
+#define GPIO_KEY_POWER  ( GPIOAO_bank_bit0_11(3)  << 16 ) | GPIOAO_bit_bit0_11(3)
 // SOUND
 #define GPIO_SND_SPK_MUTE    GPIO_C(4) // ( GPIOC_bank_bit0_15(4)   << 16 ) | GPIOC_bit_bit0_15(4)
 
