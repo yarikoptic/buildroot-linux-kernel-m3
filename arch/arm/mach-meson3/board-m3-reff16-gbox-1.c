@@ -610,8 +610,6 @@ void mute_headphone(void* codec, int flag)
 		WRITE_APB_REG((APB_BASE+(0x18<<2)), reg_val);			// unmute headphone
 	}
 }
-
-#endif
 /* --------------------------------------------------------------------------*/
 /**
  * * @brief  set_audio_codec_pinmux
@@ -625,6 +623,7 @@ static void __init set_audio_codec_pinmux(void)
     clear_mio_mux(7, (1 << 18) | (1 << 19) | (1 << 20) | (1 << 21) | (1 << 22) | (1 << 23));
     set_mio_mux(8, (1 << 27) | (1 << 26) | (1 << 25) | (1 << 24));
 }
+#endif
 
 #if defined(CONFIG_ANDROID_PMEM) || defined(CONFIG_CMEM)
 static struct android_pmem_platform_data pmem_data =
