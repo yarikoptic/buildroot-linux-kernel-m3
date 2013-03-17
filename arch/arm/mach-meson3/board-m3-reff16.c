@@ -89,7 +89,7 @@ static int suspend_state=0;
 // BUTTONS
 #define GPIO_KEY_POWER  ( GPIOAO_bank_bit0_11(3)  << 16 ) | GPIOAO_bit_bit0_11(3)
 // SOUND
-#define GPIO_SND_SPK_MUTE    GPIO_C(4) // ( GPIOC_bank_bit0_15(4)   << 16 ) | GPIOC_bit_bit0_15(4)
+#define GPIO_SND_MUTE  GPIO_X(29)
 
 #if defined(CONFIG_JPEGLOGO)
 static struct resource jpeglogo_resources[] = {
@@ -589,9 +589,9 @@ void mute_spk(void* codec, int flag)
 	printk("***Entered %s:%s\n", __FILE__,__func__);
 #endif
 	if ( flag ) {
-	gpio_direction_output(GPIO_SND_SPK_MUTE, 1);
+	gpio_direction_output(GPIO_SND_MUTE,1);
 	} else {
-	gpio_direction_output(GPIO_SND_SPK_MUTE, 0);
+	gpio_direction_output(GPIO_SND_MUTE,0);
 	}
 }
 
