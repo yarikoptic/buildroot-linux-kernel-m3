@@ -1645,8 +1645,10 @@ static void __init eth_pinmux_init(void)
     meson_eth_reset();
 }
 
-static void __init spdif_pinmux_init(void )
+static void __init device_pinmux_init(void )
 {
+	clearall_pinmux();
+	aml_i2c_init();
 	printk("SPDIF output.\n");
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<19));
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<25));
@@ -1751,11 +1753,8 @@ static void __init spdif_pinmux_init(void )
 
 static void __init  device_clk_setting(void)
 {
-	clearall_pinmux();
 	/*pinmux of eth*/
 	eth_pinmux_init();
-	/*pinmux SPDIF */
-	spdif_pinmux_init();
 }
 
 static void disable_unused_model(void)
@@ -1821,6 +1820,7 @@ static __init void m1_init_machine(void)
 #endif /*CONFIG_AML_SUSPEND*/
     
     power_hold();
+    device_clk_setting();
     device_pinmux_init();
     platform_add_devices(platform_devs, ARRAY_SIZE(platform_devs));
 
