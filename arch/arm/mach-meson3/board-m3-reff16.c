@@ -314,7 +314,6 @@ static void set_usb_b_vbus_power(char is_power_on)
 {
 }
 
-//usb_a is OTG port
 static struct lm_device usb_ld_a = {
     .type = LM_DEVICE_TYPE_USB,
     .id = 0,
@@ -322,7 +321,7 @@ static struct lm_device usb_ld_a = {
     .resource.start = IO_USB_A_BASE,
     .resource.end = -1,
     .dma_mask_room = DMA_BIT_MASK(32),
-    .port_type = USB_PORT_TYPE_OTG,
+    .port_type = USB_PORT_TYPE_HOST,
     .port_speed = USB_PORT_SPEED_DEFAULT,
     .dma_config = USB_DMA_BURST_INCR16,
     .set_vbus_power = set_usb_a_vbus_power,
