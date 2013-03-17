@@ -1652,7 +1652,6 @@ static void __init spdif_pinmux_init(void )
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<25));
 	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7,(1<<17));
 	SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<24));
-}
 
 #ifdef CONFIG_AM_MXL101
 	//for mxl101
