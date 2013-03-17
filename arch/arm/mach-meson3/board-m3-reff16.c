@@ -1529,13 +1529,6 @@ static struct platform_device aml_hdmi_device = {
     }
 };
 #endif
-#define ETH_PM_DEV
-#if defined(ETH_PM_DEV)
-#define ETH_MODE_RMII_EXTERNAL
-static void meson_eth_clock_enable(int flag)
-{
-printk("meson_eth_clock_enable: %x\n", (unsigned int)flag );
-}
 
 static void meson_eth_reset(void)
 {
@@ -1544,6 +1537,14 @@ static void meson_eth_reset(void)
     gpio_direction_output(GPIO_ETH_RESET, 0);
     mdelay(100);
     gpio_set_value(GPIO_ETH_RESET, 1); 
+}
+
+#define ETH_PM_DEV
+#if defined(ETH_PM_DEV)
+#define ETH_MODE_RMII_EXTERNAL
+static void meson_eth_clock_enable(int flag)
+{
+  printk("meson_eth_clock_enable: %x\n", (unsigned int)flag );
 }
 
 static struct aml_eth_platform_data  aml_pm_eth_platform_data ={
@@ -1688,9 +1689,11 @@ static void __init eth_pinmux_init(void)
 	
    CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_6,(3<<17));//reg6[17/18]=0
    #ifdef NET_EXT_CLK
-       eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_IN_GPIOY0_REG6_18, 0);
+        eth_clk_set(ETH_CLKSRC_EXT_XTAL_CLK, (50 * CLK_1M), (50 * CLK_1M), 1);
+	eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_IN_GPIOY0_REG6_18, 0);
    #else
-       eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_OUT_GPIOY0_REG6_17, 0);
+	eth_clk_set(ETH_CLKSRC_MISC_CLK, get_misc_pll_clk(), (50 * CLK_1M), 0);
+       	eth_set_pinmux(ETH_BANK0_GPIOY1_Y9, ETH_CLK_OUT_GPIOY0_REG6_17, 0);
    #endif
 	
    CLEAR_CBUS_REG_MASK(PREG_ETHERNET_ADDR0, 1);           // Disable the Ethernet clocks
@@ -1708,29 +1711,15 @@ static void __init eth_pinmux_init(void)
     meson_eth_reset();
 }
 
-static void __init device_pinmux_init(void )
+static void __init spdif_pinmux_init(void )
 {
-    clearall_pinmux();
-    /*other deivce power on*/
-    /*GPIOA_200e_bit4..usb/eth/YUV power on*/
-    //set_gpio_mode(PREG_EGPIO,1<<4,GPIO_OUTPUT_MODE);
-    //set_gpio_val(PREG_EGPIO,1<<4,1);
-    //uart_set_pinmux(UART_PORT_A,PINMUX_UART_A);
-    //uart_set_pinmux(UART_PORT_B,PINMUX_UART_B);
-    /*pinmux of eth*/
-    eth_pinmux_init();
-    aml_i2c_init();
-    
-    printk("SPDIF output.\n");
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<19));
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<25));
-		CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7,(1<<17));
-		SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<24));
-//    set_audio_pinmux(AUDIO_OUT_TEST_N);
-   // set_audio_pinmux(AUDIO_IN_JTAG);
+	printk("SPDIF output.\n");
+	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_0,(1<<19));
+	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_3,(1<<25));
+	CLEAR_CBUS_REG_MASK(PERIPHS_PIN_MUX_7,(1<<17));
+	SET_CBUS_REG_MASK(PERIPHS_PIN_MUX_3, (1<<24));
+}
 
-
-	
 #ifdef CONFIG_AM_MXL101
 	//for mxl101
 
@@ -1829,15 +1818,11 @@ static void __init device_pinmux_init(void )
 
 static void __init  device_clk_setting(void)
 {
-    /*Demod CLK for eth and sata*/
-    //demod_apll_setting(0,1200*CLK_1M);
-    /*eth clk*/
-    #ifdef NET_EXT_CLK
-		eth_clk_set(7, (50 * CLK_1M), (50 * CLK_1M), 1);
-	#else    
-    	eth_clk_set(ETH_CLKSRC_MISC_CLK, get_misc_pll_clk(), (50 * CLK_1M), 0);
-    #endif
-    //eth_clk_set(1, get_system_clk(), (50 * CLK_1M), 0);
+	clearall_pinmux();
+	/*pinmux of eth*/
+	eth_pinmux_init();
+	/*pinmux SPDIF */
+	spdif_pinmux_init();
 }
 
 static void disable_unused_model(void)
@@ -1899,23 +1884,19 @@ static __init void m1_init_machine(void)
 {
     meson_cache_init();
 #ifdef CONFIG_AML_SUSPEND
-		pm_power_suspend = meson_power_suspend;
+    pm_power_suspend = meson_power_suspend;
 #endif /*CONFIG_AML_SUSPEND*/
     
     power_hold();
-//    pm_power_off = power_off;		//Elvis fool
-    device_clk_setting();
     device_pinmux_init();
-//    LED_PWM_REG0_init();
-
     platform_add_devices(platform_devs, ARRAY_SIZE(platform_devs));
 
 #ifdef CONFIG_USB_DWC_OTG_HCD
     printk("***m1_init_machine: usb set mode.\n");
     set_usb_phy_clk(USB_PHY_CLOCK_SEL_XTAL_DIV2);
-//	set_usb_phy_id_mode(USB_PHY_PORT_A, USB_PHY_MODE_SW_HOST);
+    //set_usb_phy_id_mode(USB_PHY_PORT_A, USB_PHY_MODE_SW_HOST);
     lm_device_register(&usb_ld_a);
-  	set_usb_phy_id_mode(USB_PHY_PORT_B,USB_PHY_MODE_SW_HOST);
+    set_usb_phy_id_mode(USB_PHY_PORT_B,USB_PHY_MODE_SW_HOST);
     lm_device_register(&usb_ld_b);
 #endif
     disable_unused_model();
