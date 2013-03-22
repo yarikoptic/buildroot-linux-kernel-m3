@@ -1,5 +1,5 @@
-#ifndef __BOARD_8626M_W10_H
-#define __BOARD_8626M_W10_H
+#ifndef __BOARD_STV_MBX_MC_H
+#define __BOARD_STV_MBX_MC_H
 
 #include <asm/page.h>
 
@@ -31,8 +31,13 @@
 #define B32BpP	(4)
 #define DOUBLE_BUFFER	(2)
 
+#if defined(CONFIG_ANDROID)
 #define OSD1_MAX_MEM		U_ALIGN(OSD_1080_PIX*B32BpP*DOUBLE_BUFFER)
-#define OSD2_MAX_MEM		U_ALIGN(OSD_1080_PIX*B32BpP*DOUBLE_BUFFER)
+#define OSD2_MAX_MEM		U_ALIGN(32*32*B32BpP)
+#else
+#define OSD1_MAX_MEM		U_ALIGN(OSD_720_PIX*B32BpP*DOUBLE_BUFFER)
+#define OSD2_MAX_MEM		U_ALIGN(OSD_720_PIX*B32BpP*DOUBLE_BUFFER)
+#endif
 
 /******** Reserved memory configuration ***************/
 #define OSD1_ADDR_START		U_ALIGN(AUDIODSP_ADDR_END )
@@ -61,7 +66,7 @@
 #define CODEC_ADDR_END		(CODEC_ADDR_START+CODEC_MEM_SIZE-1)
 
 /********VDIN memory configuration ***************/
-#ifdef CONFIG_TVIN_VIUIN
+#ifdef CONFIG_TVIN_VIUIN //Rony merge 20120521 
 #define VDIN_MEM_SIZE			(SZ_1M*15)
 #define VDIN_ADDR_START		U_ALIGN(CODEC_ADDR_END)
 #define VDIN_ADDR_END		(VDIN_ADDR_START +VDIN_MEM_SIZE -1)
@@ -71,9 +76,9 @@
 #endif
 
 #if defined(CONFIG_AM_DEINTERLACE_SD_ONLY)
-#define DI_MEM_SIZE			(SZ_1M*6)
+#define DI_MEM_SIZE			(SZ_1M*3)
 #else
-#define DI_MEM_SIZE			(SZ_1M*30)
+#define DI_MEM_SIZE			(SZ_1M*15)
 #endif
 #define DI_ADDR_START		U_ALIGN(VDIN_ADDR_END)
 #define DI_ADDR_END			(DI_ADDR_START+DI_MEM_SIZE-1)
@@ -96,15 +101,11 @@
 #define FREESCALE_ADDR_START PPMGR_ADDR_START
 #define FREESCALE_ADDR_END   PPMGR_ADDR_END
 
-#define STREAMBUF_MEM_SIZE   		(SZ_1M*15)
+#define STREAMBUF_MEM_SIZE   		(SZ_1M*7) // steven change back.
 #define STREAMBUF_ADDR_START		U_ALIGN(PPMGR_ADDR_END)
 #define STREAMBUF_ADDR_END		(STREAMBUF_ADDR_START+STREAMBUF_MEM_SIZE-1)
 
 #define RESERVED_MEM_END	(STREAMBUF_ADDR_END)
 
-#define CONFIG_ENV_OFFSET       0x1000000	//16M
-#define CONFIG_ENV_SIZE         0x8000		//32K
-
-#define BOOTLOADER_OFFSET       0
-#define BOOTLOADER_SIZE         0x100000	//1M
+#define CONFIG_STV	1 // added by steven for steven config.
 #endif

@@ -163,7 +163,10 @@ static void set_frame_info(vframe_t *vf)
 
     vf->width  = frame_width = READ_MPEG_REG(MREG_PIC_WIDTH);
     vf->height = frame_height = READ_MPEG_REG(MREG_PIC_HEIGHT);
-
+	
+    if(frame_height==1088)
+    vf->height=frame_height=1080;
+	
     if (frame_dur > 0) {
         vf->duration = frame_dur;
     } else {
@@ -345,7 +348,7 @@ static irqreturn_t vmpeg12_isr(int irq, void *dev_id)
 
             vf->index = index;
             vf->type = (info & PICINFO_TOP_FIRST) ?
-                       VIDTYPE_INTERLACE_BOTTOM : VIDTYPE_INTERLACE_TOP;
+                       VIDTYPE_INTERLACE_TOP : VIDTYPE_INTERLACE_BOTTOM;
             vf->duration >>= 1;
             vf->duration_pulldown = (info & PICINFO_RPT_FIRST) ?
                                     vf->duration >> 1 : 0;
