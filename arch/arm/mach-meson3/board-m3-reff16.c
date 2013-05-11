@@ -323,7 +323,6 @@ static void set_usb_b_vbus_power(char is_power_on)
         set_gpio_val(USB_B_POW_GPIO, USB_B_POW_GPIO_BIT, USB_B_POW_GPIO_BIT_OFF);
     }
 }
-}
 
 static struct lm_device usb_ld_a = {
     .type = LM_DEVICE_TYPE_USB,
