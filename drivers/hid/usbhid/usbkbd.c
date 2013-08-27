@@ -273,6 +273,12 @@ static int usb_kbd_probe(struct usb_interface *iface,
 	usb_to_input_id(dev, &input_dev->id);
 	input_dev->dev.parent = &iface->dev;
 
+	/* HACK WARNING!! This should go away as soon there is a better
+        * way to control that for event devices.
+        */
+        input_dev->rep[REP_DELAY] = 500;   /* input layer default: 250 */
+        input_dev->rep[REP_PERIOD] = 125; /* input layer default: 33 */
+	
 	input_set_drvdata(input_dev, kbd);
 
 	input_dev->evbit[0] = BIT_MASK(EV_KEY) | BIT_MASK(EV_LED) |
