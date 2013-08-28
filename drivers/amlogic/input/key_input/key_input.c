@@ -314,8 +314,8 @@ static int __init key_input_probe(struct platform_device *pdev)
     input_dev->id.product = 0x0001;
     input_dev->id.version = 0x0100;
 
-    input_dev->rep[REP_DELAY]=5000;
-    input_dev->rep[REP_PERIOD]=125;
+    input_dev->rep[REP_DELAY]=0xffffffff;
+    input_dev->rep[REP_PERIOD]=0xffffffff;
 
     input_dev->keycodesize = sizeof(unsigned short);
     input_dev->keycodemax = 0x1ff;
