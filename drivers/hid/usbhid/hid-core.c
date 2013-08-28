@@ -582,7 +582,13 @@ static int usb_hidinput_input_event(struct input_dev *dev, unsigned int type, un
 	struct hid_field *field;
 	unsigned long flags;
 	int offset;
-
+	
+	/* HACK WARNING!! This should go away as soon there is a better
+	* way to control that for event devices.
+	*/
+        input_dev->rep[REP_DELAY] = 5000;   /* input layer default: 250 */
+        input_dev->rep[REP_PERIOD] = 125; /* input layer default: 33 */
+  
 	if (type == EV_FF)
 		return input_ff_event(dev, type, code, value);
 
