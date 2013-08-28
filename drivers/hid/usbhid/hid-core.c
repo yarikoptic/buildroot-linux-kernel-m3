@@ -583,6 +583,12 @@ static int usb_hidinput_input_event(struct input_dev *dev, unsigned int type, un
 	unsigned long flags;
 	int offset;
 	
+	/* HACK WARNING!! This should go away as soon there is a better
+	* way to control that for event devices.
+	*/
+        input_dev->rep[REP_DELAY] = 5000;   /* input layer default: 250 */
+        input_dev->rep[REP_PERIOD] = 125; /* input layer default: 33 */
+  
 	if (type == EV_FF)
 		return input_ff_event(dev, type, code, value);
 
@@ -1098,7 +1104,6 @@ static int usbhid_probe(struct usb_interface *intf, const struct usb_device_id *
 	struct usb_device *dev = interface_to_usbdev(intf);
 	struct usbhid_device *usbhid;
 	struct hid_device *hid;
-	struct input_dev *input_dev;
 	unsigned int n, has_in = 0;
 	size_t len;
 	int ret;
@@ -1172,12 +1177,6 @@ static int usbhid_probe(struct usb_interface *intf, const struct usb_device_id *
 	usbhid->hid = hid;
 	usbhid->intf = intf;
 	usbhid->ifnum = interface->desc.bInterfaceNumber;
-
-	/* HACK WARNING!! This should go away as soon there is a better
-        * way to control that for event devices.
-        */
-        input_dev->rep[REP_DELAY] = 5000;   /* input layer default: 250 */
-        input_dev->rep[REP_PERIOD] = 125; /* input layer default: 33 */
 
 	init_waitqueue_head(&usbhid->wait);
 	INIT_WORK(&usbhid->reset_work, hid_reset);
