@@ -654,7 +654,7 @@ static int hid_set_idle_with_quirk(struct usb_device *dev, int ifnum, int report
     if ((idle <= 0) || (idle > 10))
     {
       /* USB might miss packets, so set to (10 * 4) = 40ms USB HID idle rate to workaround sticky key issue */
-      idle = 10;
+      idle = 40;
     }
   }
   
